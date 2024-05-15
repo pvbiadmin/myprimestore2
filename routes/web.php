@@ -51,7 +51,8 @@ Route::get('flash-sale', [FlashSaleController::class, 'index'])->name('flash-sal
 Route::controller(ProductController::class)->group(function () {
     Route::get('products', 'index')->name('products.index');
     Route::get('product/detail/{slug}', 'detail')->name('product-detail');
-    Route::get('change-product-tab-view', 'changeProductTabView')->name('change-product-tab-view');
+    Route::get('change-product-tab-view', 'changeProductTabView')
+        ->name('change-product-tab-view');
     Route::get('change-product-detail-tab-view', 'changeProductDetailTabView')
         ->name('change-product-detail-tab-view');
 });
@@ -107,7 +108,7 @@ Route::controller(BlogController::class)->group(function () {
 Route::get('wishlist/add-product', [WishlistController::class, 'addToWishlist'])
     ->name('wishlist.store');
 
-Route::get('/download/{filename}', function ($filename) {
+Route::get('/download/{filename}', static function ($filename) {
     $file_path = public_path($filename);
 
     $headers = [
@@ -117,16 +118,16 @@ Route::get('/download/{filename}', function ($filename) {
 
     if (file_exists($file_path)) {
         return response()->download($file_path, $filename, $headers);
-    } else {
-        return response('File not found', 404);
     }
+
+    return response('File not found', 404);
 })->name('download');
 
 Route::group([
     'middleware' => ['auth', 'verified'],
     'prefix' => 'user',
     'as' => 'user.'
-], function () {
+], static function () {
     Route::get('dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
     Route::controller(UserProfileController::class)->group(function () {

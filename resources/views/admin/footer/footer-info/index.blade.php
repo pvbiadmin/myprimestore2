@@ -33,27 +33,27 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="phone">phone</label>
+                                            <label for="phone">Phone</label>
                                             <input type="text" class="form-control" name="phone"
                                                    id="phone" value="{{ @$footerInfo->phone }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="email">email</label>
+                                            <label for="email">Email</label>
                                             <input type="text" class="form-control" name="email"
                                                    id="email" value="{{ @$footerInfo->email }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="address">address</label>
+                                    <label for="address">Address</label>
                                     <input type="text" class="form-control" name="address"
                                            id="address" value="{{ @$footerInfo->address }}">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="copyright">copyright</label>
+                                    <label for="copyright">Copyright</label>
                                     <input type="text" class="form-control" name="copyright"
                                            id="copyright" value="{{ @$footerInfo->copyright }}">
                                 </div>

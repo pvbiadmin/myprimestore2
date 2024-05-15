@@ -6,6 +6,7 @@ use App\DataTables\FooterGridThreeDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\FooterGridThree;
 use App\Models\FooterTitle;
+use App\Traits\FooterGridTrait;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -19,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 
 class FooterGridThreeController extends Controller
 {
+    use FooterGridTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -28,6 +31,7 @@ class FooterGridThreeController extends Controller
     public function index(FooterGridThreeDataTable $dataTable): mixed
     {
         $footerTitle = FooterTitle::query()->first();
+
         return $dataTable->render('admin.footer.footer-grid-three.index', compact('footerTitle'));
     }
 
@@ -49,25 +53,13 @@ class FooterGridThreeController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:200'],
-            'url' => ['required', 'url'],
-            'status' => ['required']
-        ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()->withInput()
-                ->with(['message' => $error, 'alert-type' => 'error']);
-        }
+        $this->validateRequest($request);
 
         $footer = new FooterGridThree();
 
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
+        $footer->name = $request->input('name');
+        $footer->url = $request->input('url');
+        $footer->status = $request->input('status');
 
         $footer->save();
 
@@ -75,14 +67,6 @@ class FooterGridThreeController extends Controller
 
         return redirect()->route('admin.footer-grid-three.index')
             ->with(['message' => 'Created Successfully']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -94,6 +78,7 @@ class FooterGridThreeController extends Controller
     public function edit(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
         $footer = FooterGridThree::query()->findOrFail($id);
+
         return view('admin.footer.footer-grid-three.edit', compact('footer'));
     }
 
@@ -106,25 +91,13 @@ class FooterGridThreeController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:200'],
-            'url' => ['required', 'url'],
-            'status' => ['required']
-        ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()
-                ->with(['message' => $error, 'alert-type' => 'error']);
-        }
+        $this->validateRequest($request);
 
         $footer = FooterGridThree::query()->findOrFail($id);
 
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
+        $footer->name = $request->input('name');
+        $footer->url = $request->input('url');
+        $footer->status = $request->input('status');
 
         $footer->save();
 
@@ -158,9 +131,9 @@ class FooterGridThreeController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = FooterGridThree::query()->findOrFail($request->idToggle);
+        $slider = FooterGridThree::query()->findOrFail($request->input('idToggle'));
 
-        $slider->status = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         Cache::forget('footer_grid_three');
@@ -172,6 +145,8 @@ class FooterGridThreeController extends Controller
     }
 
     /**
+     * Change Footer Grid Title
+     *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -191,7 +166,7 @@ class FooterGridThreeController extends Controller
 
         FooterTitle::query()->updateOrCreate(
             ['id' => 1],
-            ['footer_grid_three_title' => $request->title]
+            ['footer_grid_three_title' => $request->input('title')]
         );
 
         return redirect()->back()->with(['message' => 'Updated Successfully']);

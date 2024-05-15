@@ -8,7 +8,6 @@ use App\Models\FooterSocial;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,24 +64,16 @@ class FooterSocialController extends Controller
 
         $footer = new FooterSocial();
 
-        $footer->icon = $request->icon;
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
+        $footer->icon = $request->input('icon');
+        $footer->name = $request->input('name');
+        $footer->url = $request->input('url');
+        $footer->status = $request->input('status');
         $footer->save();
 
         Cache::forget('footer_socials');
 
         return redirect()->route('admin.footer-socials.index')
             ->with(['message' => 'Created Successfully']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -121,10 +112,10 @@ class FooterSocialController extends Controller
         }
 
         $footer = FooterSocial::query()->findOrFail($id);
-        $footer->icon = $request->icon;
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
+        $footer->icon = $request->input('icon');
+        $footer->name = $request->input('name');
+        $footer->url = $request->input('url');
+        $footer->status = $request->input('status');
         $footer->save();
 
         Cache::forget('footer_socials');
@@ -158,9 +149,9 @@ class FooterSocialController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $category = FooterSocial::query()->findOrFail($request->idToggle);
+        $category = FooterSocial::query()->findOrFail($request->input('idToggle'));
 
-        $category->status = ($request->isChecked == 'true' ? 1 : 0);
+        $category->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $category->save();
 
         Cache::forget('footer_socials');

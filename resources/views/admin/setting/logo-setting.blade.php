@@ -7,7 +7,8 @@
                 <div class="row">
                     <div class="col-md-6 d-flex align-items-end">
                         <div class="form-group">
-                            <p><img src="{{ asset(@$logo_settings->logo) }}" width="150px"
+                            <p><img src="{{ file_exists(public_path($logo_settings->logo))
+                                ? asset($logo_settings->logo) : 'https://placehold.co/150' }}" width="150px"
                                     alt="site-logo" style="background-color: #999;"></p>
                             <label>Logo</label>
                             <input type="file" class="form-control" name="logo">
@@ -17,7 +18,8 @@
                     </div>
                     <div class="col-md-6 d-flex align-items-end">
                         <div class="form-group">
-                            <p><img src="{{ asset(@$logo_settings->favicon) }}" width="150px"
+                            <p><img src="{{ file_exists(public_path($logo_settings->favicon))
+                                ? asset($logo_settings->favicon) : 'https://placehold.co/150' }}" width="150px"
                                     alt="favicon-logo" style="background-color: #999;"></p>
                             <label>Favicon</label>
                             <input type="file" class="form-control" name="favicon">

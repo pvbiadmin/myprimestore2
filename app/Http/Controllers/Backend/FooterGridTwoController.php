@@ -6,10 +6,10 @@ use App\DataTables\FooterGridTwoDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\FooterGridTwo;
 use App\Models\FooterTitle;
+use App\Traits\FooterGridTrait;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 
 class FooterGridTwoController extends Controller
 {
+    use FooterGridTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -50,27 +52,13 @@ class FooterGridTwoController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:200'],
-            'url' => ['required', 'url'],
-            'status' => ['required']
+        $this->validateRequest($request);
+
+        FooterGridTwo::create([
+            'name' => $request->input('name'),
+            'url' => $request->input('url'),
+            'status' => $request->input('status'),
         ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()->withInput()
-                ->with(['message' => $error, 'alert-type' => 'error']);
-        }
-
-        $footer = new FooterGridTwo();
-
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
-
-        $footer->save();
 
         Cache::forget('footer_grid_two');
 
@@ -79,22 +67,14 @@ class FooterGridTwoController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param string $id
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
      */
-    public function edit(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+    public function edit(string $id): View|Factory|Application
     {
-        $footer = FooterGridTwo::query()->findOrFail($id);
+        $footer = FooterGridTwo::findOrFail($id);
         return view('admin.footer.footer-grid-two.edit', compact('footer'));
     }
 
@@ -107,32 +87,19 @@ class FooterGridTwoController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:200'],
-            'url' => ['required', 'url'],
-            'status' => ['required']
+        $this->validateRequest($request);
+
+        $footer = FooterGridTwo::findOrFail($id);
+        $footer->update([
+            'name' => $request->input('name'),
+            'url' => $request->input('url'),
+            'status' => $request->input('status'),
         ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()
-                ->with(['message' => $error, 'alert-type' => 'error']);
-        }
-
-        $footer = FooterGridTwo::query()->findOrFail($id);
-
-        $footer->name = $request->name;
-        $footer->url = $request->url;
-        $footer->status = $request->status;
-
-        $footer->save();
 
         Cache::forget('footer_grid_two');
 
         return redirect()->route('admin.footer-grid-two.index')
-            ->with(['message' => 'Update Successfully']);
+            ->with(['message' => 'Updated Successfully']);
     }
 
     /**
@@ -159,9 +126,9 @@ class FooterGridTwoController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = FooterGridTwo::query()->findOrFail($request->idToggle);
+        $slider = FooterGridTwo::query()->findOrFail($request->input('idToggle'));
 
-        $slider->status = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         Cache::forget('footer_grid_two');
@@ -173,6 +140,8 @@ class FooterGridTwoController extends Controller
     }
 
     /**
+     * Change Footer Grid Title
+     *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -192,7 +161,7 @@ class FooterGridTwoController extends Controller
 
         FooterTitle::query()->updateOrCreate(
             ['id' => 1],
-            ['footer_grid_two_title' => $request->title]
+            ['footer_grid_two_title' => $request->input('title')]
         );
 
         return redirect()->back()->with(['message' => 'Updated Successfully']);

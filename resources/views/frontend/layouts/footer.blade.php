@@ -1,19 +1,19 @@
 @php
-    $footerInfo = Cache::rememberForever('footer_info', function(){
+    $footerInfo = Cache::rememberForever('footer_info', static function(){
             return \App\Models\FooterInfo::query()->first();
     });
 
-    $footerSocials = Cache::rememberForever('footer_socials', function(){
+    $footerSocials = Cache::rememberForever('footer_socials', static function(){
         return \App\Models\FooterSocial::query()->where('status', 1)->get();
     });
 
     $footerTitle = \App\Models\FooterTitle::query()->first();
 
-    $footerGridTwoLinks = Cache::rememberForever('footer_grid_two', function(){
+    $footerGridTwoLinks = Cache::rememberForever('footer_grid_two', static function(){
         return \App\Models\FooterGridTwo::query()->where('status', 1)->get();
     });
 
-    $footerGridThreeLinks = Cache::rememberForever('footer_grid_three', function(){
+    $footerGridThreeLinks = Cache::rememberForever('footer_grid_three', static function(){
         return \App\Models\FooterGridThree::query()->where('status', 1)->get();
     });
 @endphp

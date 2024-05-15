@@ -27,7 +27,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="url">url</label>
+                                    <label for="url">URL</label>
                                     <input type="text" class="form-control" name="url"
                                            id="url" value="{{ old('url') }}">
                                 </div>
@@ -35,8 +35,10 @@
                                 <div class="form-group">
                                     <label for="inputState">Status</label>
                                     <select id="inputState" class="form-control" name="status">
-                                        <option value="1" {{ old('status') == 1 ? 'selected' : '' }}>Active</option>
-                                        <option value="0" {{ old('status') == 0 ? 'selected' : '' }}>Inactive</option>
+                                        <option value="1" {{ old('status') === '1'
+                                            ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ old('status') === '0'
+                                            ? 'selected' : '' }}>Inactive</option>
                                     </select>
                                 </div>
 
