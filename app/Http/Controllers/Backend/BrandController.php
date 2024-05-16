@@ -14,7 +14,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -52,9 +51,16 @@ class BrandController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->validateRequest($request);
+
         $brand = new Brand();
 
-        return $this->saveBrand($request, $brand, 'New Brand Added');
+        $image_path = $this->uploadImage($request, 'logo', 'uploads');
+
+        $this->brandSave($request, $brand, $image_path);
+
+        return redirect()->route('admin.brand.index')
+            ->with(['message' => 'New Brand Added']);
     }
 
     /**
@@ -79,9 +85,16 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
+        $this->validateRequest($request, true);
+
         $brand = Brand::query()->findOrFail($id);
 
-        return $this->saveBrand($request, $brand, 'Brand Updated Successfully');
+        $image_path = $this->updateImage($request, 'logo', 'uploads', $brand->logo);
+
+        $this->brandSave($request, $brand, $image_path);
+
+        return redirect()->route('admin.brand.index')
+            ->with(['message' => 'Brand Updated Successfully']);
     }
 
     /**
@@ -151,17 +164,22 @@ class BrandController extends Controller
     }
 
     /**
-     * Save Brand
+     * Validate the given request.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Brand $brand
-     * @param string $message
-     * @return \Illuminate\Http\RedirectResponse
+     * @param bool $update
+     * @return void
      */
-    private function saveBrand(Request $request, Brand $brand, string $message): RedirectResponse
+    protected function validateRequest(Request $request, $update = false): void
     {
+        $logo_rules = ['image', 'max:2048'];
+
+        if (!$update) {
+            $logo_rules[] = 'required';
+        }
+
         $validator = Validator::make($request->all(), [
-            'logo' => ['image', 'sometimes', 'max:2048'],
+            'logo' => $logo_rules,
             'name' => ['required', 'max:200'],
             'is_featured' => ['required'],
             'status' => ['required']
@@ -171,15 +189,23 @@ class BrandController extends Controller
             $validator->validate();
         } catch (ValidationException $e) {
             $error = $e->validator->errors()->first();
-            return redirect()->back()->withInput()
-                ->with(['message' => $error, 'alert-type' => 'error']);
+            redirect()->back()->withInput()
+                ->with(['message' => $error, 'alert-type' => 'error'])
+                ->throwResponse();
         }
+    }
 
-        if ($request->hasFile('logo')) {
-            $image_path = $this->handleImage($request, 'logo', 'uploads', $brand->logo);
-            if ($image_path) {
-                $brand->logo = $image_path;
-            }
+    /**
+     * Save Brand
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param $brand
+     * @param $image_path
+     */
+    protected function brandSave(Request $request, $brand, $image_path): void
+    {
+        if ($image_path) {
+            $brand->logo = $image_path;
         }
 
         $brand->name = $request->input('name');
@@ -188,33 +214,5 @@ class BrandController extends Controller
         $brand->status = $request->input('status');
 
         $brand->save();
-
-        return redirect()->route('admin.brand.index')->with(['message' => $message]);
-    }
-
-    /**
-     * Handle Image Upload
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param string $inputName
-     * @param string $directory
-     * @param string|null $existingImagePath
-     * @return string|null
-     */
-    private function handleImage(Request $request, string $inputName, string $directory, ?string $existingImagePath = null): ?string
-    {
-        if ($request->hasFile($inputName)) {
-            $file = $request->file($inputName);
-
-            if ($file && $file->isValid()) {
-                if ($existingImagePath) {
-                    Storage::delete($existingImagePath);
-                }
-
-                return $file->store($directory);
-            }
-        }
-
-        return null;
     }
 }
