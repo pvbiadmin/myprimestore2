@@ -8,8 +8,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class BrandDataTable extends DataTable
@@ -36,14 +34,14 @@ class BrandDataTable extends DataTable
             ->addColumn('is_featured', function ($query) {
                 return '<label class="custom-switch mt-2">
                         <input type="checkbox" name="is_featured" class="custom-switch-input change-is-featured" ' .
-                    ($query->is_featured == 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
+                    ($query->is_featured === 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
                         <span class="custom-switch-indicator"></span>
                     </label>';
             })
             ->addColumn('status', function ($query) {
                 return '<label class="custom-switch mt-2">
                         <input type="checkbox" name="status" class="custom-switch-input change-status" ' .
-                    ($query->status == 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
+                    ($query->status === 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
                         <span class="custom-switch-indicator"></span>
                     </label>';
             })

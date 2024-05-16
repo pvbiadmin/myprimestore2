@@ -14,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -51,45 +52,9 @@ class BrandController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'logo' => ['image', 'required', 'max:2048'],
-            'name' => ['required', 'max:200'],
-            'is_featured' => ['required'],
-            'status' => ['required']
-        ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()->withInput()
-                ->with(['message' => $error, 'alert-type' => 'error']);
-        }
-
         $brand = new Brand();
 
-        $image_path = $this->uploadImage($request, 'logo', 'uploads');
-
-        if ($image_path) {
-            $brand->logo = $image_path;
-        }
-
-        $brand->name = $request->name;
-        $brand->slug = Str::slug($request->name);
-        $brand->is_featured = $request->is_featured;
-        $brand->status = $request->status;
-
-        $brand->save();
-
-        return redirect()->route('admin.brand.index')->with(['message' => 'New Brand Added']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        return $this->saveBrand($request, $brand, 'New Brand Added');
     }
 
     /**
@@ -114,37 +79,9 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'logo' => ['image', 'max:2048'],
-            'name' => ['required', 'max:200'],
-            'is_featured' => ['required'],
-            'status' => ['required']
-        ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()->with(['message' => $error, 'alert-type' => 'error']);
-        }
-
         $brand = Brand::query()->findOrFail($id);
 
-        $image_path = $this->updateImage($request, 'logo', 'uploads', $brand->logo);
-
-        if ($image_path) {
-            $brand->logo = $image_path;
-        }
-
-        $brand->name = $request->name;
-        $brand->slug = Str::slug($request->name);
-        $brand->is_featured = $request->is_featured;
-        $brand->status = $request->status;
-
-        $brand->save();
-
-        return redirect()->route('admin.brand.index')
-            ->with(['message' => 'Brand Updated Successfully']);
+        return $this->saveBrand($request, $brand, 'Brand Updated Successfully');
     }
 
     /**
@@ -183,9 +120,9 @@ class BrandController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = Brand::query()->findOrFail($request->idToggle);
+        $slider = Brand::query()->findOrFail($request->input('idToggle'));
 
-        $slider->status = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         return response([
@@ -202,14 +139,82 @@ class BrandController extends Controller
      */
     public function changeIsFeatured(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = Brand::query()->findOrFail($request->idToggle);
+        $slider = Brand::query()->findOrFail($request->input('idToggle'));
 
-        $slider->is_featured = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->is_featured = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         return response([
             'status' => 'success',
             'message' => 'Brand Is-Featured Updated.'
         ]);
+    }
+
+    /**
+     * Save Brand
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Brand $brand
+     * @param string $message
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function saveBrand(Request $request, Brand $brand, string $message): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'logo' => ['image', 'sometimes', 'max:2048'],
+            'name' => ['required', 'max:200'],
+            'is_featured' => ['required'],
+            'status' => ['required']
+        ]);
+
+        try {
+            $validator->validate();
+        } catch (ValidationException $e) {
+            $error = $e->validator->errors()->first();
+            return redirect()->back()->withInput()
+                ->with(['message' => $error, 'alert-type' => 'error']);
+        }
+
+        if ($request->hasFile('logo')) {
+            $image_path = $this->handleImage($request, 'logo', 'uploads', $brand->logo);
+            if ($image_path) {
+                $brand->logo = $image_path;
+            }
+        }
+
+        $brand->name = $request->input('name');
+        $brand->slug = Str::slug($request->input('name'));
+        $brand->is_featured = $request->input('is_featured');
+        $brand->status = $request->input('status');
+
+        $brand->save();
+
+        return redirect()->route('admin.brand.index')->with(['message' => $message]);
+    }
+
+    /**
+     * Handle Image Upload
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $inputName
+     * @param string $directory
+     * @param string|null $existingImagePath
+     * @return string|null
+     */
+    private function handleImage(Request $request, string $inputName, string $directory, ?string $existingImagePath = null): ?string
+    {
+        if ($request->hasFile($inputName)) {
+            $file = $request->file($inputName);
+
+            if ($file && $file->isValid()) {
+                if ($existingImagePath) {
+                    Storage::delete($existingImagePath);
+                }
+
+                return $file->store($directory);
+            }
+        }
+
+        return null;
     }
 }
