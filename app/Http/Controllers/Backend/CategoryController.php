@@ -64,22 +64,14 @@ class CategoryController extends Controller
 
         $category = new Category();
 
-        $category->icon = $request->icon;
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->status = $request->status;
+        $category->icon = $request->input('icon');
+        $category->name = $request->input('name');
+        $category->slug = Str::slug($request->input('name'));
+        $category->status = $request->input('status');
 
         $category->save();
 
         return redirect()->route('admin.category.index')->with(['message' => 'New Category Added']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -119,10 +111,10 @@ class CategoryController extends Controller
 
         $category = Category::query()->findOrFail($id);
 
-        $category->icon = $request->icon;
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->status = $request->status;
+        $category->icon = $request->input('icon');
+        $category->name = $request->input('name');
+        $category->slug = Str::slug($request->input('name'));
+        $category->status = $request->input('status');
 
         $category->save();
 
@@ -167,9 +159,9 @@ class CategoryController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $category = Category::query()->findOrFail($request->idToggle);
+        $category = Category::query()->findOrFail($request->input('idToggle'));
 
-        $category->status = ($request->isChecked == 'true' ? 1 : 0);
+        $category->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $category->save();
 
         return response([
