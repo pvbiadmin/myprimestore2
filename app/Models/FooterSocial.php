@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,19 +16,31 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial query()
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereIcon($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FooterSocial whereUrl($value)
+ * @method static Builder|FooterSocial newModelQuery()
+ * @method static Builder|FooterSocial newQuery()
+ * @method static Builder|FooterSocial query()
+ * @method static Builder|FooterSocial whereCreatedAt($value)
+ * @method static Builder|FooterSocial whereIcon($value)
+ * @method static Builder|FooterSocial whereId($value)
+ * @method static Builder|FooterSocial whereName($value)
+ * @method static Builder|FooterSocial whereStatus($value)
+ * @method static Builder|FooterSocial whereUpdatedAt($value)
+ * @method static Builder|FooterSocial whereUrl($value)
  * @mixin \Eloquent
  */
 class FooterSocial extends Model
 {
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'icon',
+        'name',
+        'url',
+        'status',
+    ];
 }
