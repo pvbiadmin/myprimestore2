@@ -51,7 +51,7 @@ class SliderController extends Controller
         $validator = Validator::make($request->all(), [
             'image' => ['required', 'image', 'max:2048'],
             'type' => ['nullable', 'string', 'max:200'],
-            'title' => ['required', 'string', 'max:200'],
+            'title' => ['nullable', 'string', 'max:200'],
             'subtitle' => ['nullable', 'string', 'max:200'],
             'cta_caption' => ['nullable', 'string', 'max:200'],
             'cta_link' => ['nullable', 'url'],
@@ -72,32 +72,10 @@ class SliderController extends Controller
         // handle image upload
         $image_path = $this->uploadImage($request, 'image', 'uploads');
 
-        if ($image_path) {
-            $slider->image = $image_path;
-        }
-
-        $slider->type = $request->type;
-        $slider->title = $request->title;
-        $slider->subtitle = $request->subtitle;
-        $slider->cta_caption = $request->cta_caption;
-        $slider->cta_link = $request->cta_link;
-        $slider->serial = $request->serial;
-        $slider->status = $request->status;
-
-        $slider->save();
-
-        Cache::forget('sliders');
+        $this->saveSlider($request, $slider, $image_path);
 
         return redirect()->route('admin.slider.index')
             ->with(['message' => 'Slider Added Successfully']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -124,11 +102,11 @@ class SliderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'image' => ['nullable', 'image', 'max:2048'],
-            'type' => ['string', 'max:200'],
-            'title' => ['required', 'max:200'],
-            'subtitle' => ['max:200'],
-            'cta_caption' => ['max:200'],
-            'cta_link' => ['url'],
+            'type' => ['nullable', 'string', 'max:200'],
+            'title' => ['nullable', 'string', 'max:200'],
+            'subtitle' => ['nullable', 'string', 'max:200'],
+            'cta_caption' => ['nullable', 'string', 'max:200'],
+            'cta_link' => ['nullable', 'url'],
             'serial' => ['required', 'integer'],
             'status' => ['required']
         ]);
@@ -154,17 +132,7 @@ class SliderController extends Controller
             $slider->image = $image_path;
         }
 
-        $slider->type = $request->type;
-        $slider->title = $request->title;
-        $slider->subtitle = $request->subtitle;
-        $slider->cta_caption = $request->cta_caption;
-        $slider->cta_link = $request->cta_link;
-        $slider->serial = $request->serial;
-        $slider->status = $request->status;
-
-        $slider->save();
-
-        Cache::forget('sliders');
+        $this->saveSlider($request, $slider, $image_path);
 
         return redirect()->route('admin.slider.index')
             ->with(['message' => 'Slider Updated Successfully']);
@@ -199,14 +167,40 @@ class SliderController extends Controller
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = Slider::query()->findOrFail($request->idToggle);
+        $slider = Slider::query()->findOrFail($request->input('idToggle'));
 
-        $slider->status = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         return response([
             'status' => 'success',
             'message' => 'Slider Status Updated.'
         ]);
+    }
+
+    /**
+     * Save Slider entry
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param $slider
+     * @param $image_path
+     */
+    public function saveSlider(Request $request, $slider, $image_path): void
+    {
+        if ($image_path) {
+            $slider->image = $image_path;
+        }
+
+        $slider->type = $request->input('type');
+        $slider->title = $request->input('title');
+        $slider->subtitle = $request->input('subtitle');
+        $slider->cta_caption = $request->input('cta_caption');
+        $slider->cta_link = $request->input('cta_link');
+        $slider->serial = $request->input('serial');
+        $slider->status = $request->input('status');
+
+        $slider->save();
+
+        Cache::forget('sliders');
     }
 }

@@ -74,14 +74,15 @@ class HomePageSettingController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
+     * @throws \JsonException
      */
     public function updatePopularCategories(Request $request): RedirectResponse
     {
         if (
-            empty($request->popular_category1) &&
-            empty($request->popular_category2) &&
-            empty($request->popular_category3) &&
-            empty($request->popular_category4)
+            empty($request->input('popular_category1')) &&
+            empty($request->input('popular_category2')) &&
+            empty($request->input('popular_category3')) &&
+            empty($request->input('popular_category4'))
         ) {
             return redirect()->back()->with([
                 'message' => 'At Least One Category Required',
@@ -114,7 +115,7 @@ class HomePageSettingController extends Controller
 
         HomePageSetting::query()->updateOrCreate(
             ['key' => 'popular_category'],
-            ['value' => json_encode($data)]
+            ['value' => json_encode($data, JSON_THROW_ON_ERROR)]
         );
 
         return redirect()->back()->with(['message' => 'Popular Category Settings Updated']);
@@ -125,14 +126,15 @@ class HomePageSettingController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
+     * @throws \JsonException
      */
     public function updateCategoryProductSlider(Request $request): RedirectResponse
     {
         if (
-            empty($request->slider_category1)
-            && empty($request->slider_category2)
-            && empty($request->slider_category3)
-            && empty($request->slider_category4)
+            empty($request->input('slider_category1'))
+            && empty($request->input('slider_category2'))
+            && empty($request->input('slider_category3'))
+            && empty($request->input('slider_category4'))
         ) {
             return redirect()->back()
                 /*->with(['anchor' => 'list-category-product-slider-1'])*/
@@ -171,7 +173,7 @@ class HomePageSettingController extends Controller
 
         HomePageSetting::query()->updateOrCreate(
             ['key' => 'category_product_slider'],
-            ['value' => json_encode($data)]
+            ['value' => json_encode($data, JSON_THROW_ON_ERROR)]
         );
 
         return redirect()->back()
