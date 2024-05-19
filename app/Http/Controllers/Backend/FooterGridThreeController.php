@@ -6,7 +6,7 @@ use App\DataTables\FooterGridThreeDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\FooterGridThree;
 use App\Models\FooterTitle;
-use App\Traits\FooterGridTrait;
+use App\Traits\ProductTrait;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
 
 class FooterGridThreeController extends Controller
 {
-    use FooterGridTrait;
+    use ProductTrait;
 
     /**
      * Display a listing of the resource.

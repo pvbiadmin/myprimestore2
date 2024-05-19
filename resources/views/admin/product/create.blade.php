@@ -22,6 +22,7 @@
                                 <div class="form-group">
                                     <label for="image">Image</label>
                                     <input type="file" name="image" id="image" class="form-control">
+                                    <input type="hidden" name="uploaded_image" value="{{ session('uploaded_image') }}">
                                 </div>
                                 <div class="form-group">
                                     <label for="name">Name</label>
@@ -35,8 +36,9 @@
                                             <select name="brand" id="brand" class="form-control">
                                                 <option value="">Select</option>
                                                 @foreach( $brands as $brand )
-                                                    <option value="{{ $brand->id }}" {{ old('brand') == $brand->id
-                                                        ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                                    <option value="{{ $brand->id }}" {{
+                                                        str(old('brand')) === str($brand->id)
+                                                            ? 'selected' : '' }}>{{ $brand->name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -48,7 +50,8 @@
                                                 <option value="">Select</option>
                                                 @foreach( $categories as $category )
                                                     <option value="{{ $category->id }}" {{
-                                                        old('category') == $category->id ? 'selected' : ''
+                                                            str(old('category')) === str($category->id)
+                                                                ? 'selected' : ''
                                                         }}>{{ $category->name }}</option>
                                                 @endforeach
                                             </select>
@@ -61,7 +64,8 @@
                                                 <option value="">Select</option>
                                                 @foreach( $subcategories as $subcategory )
                                                     <option value="{{ $subcategory->id }}" {{
-                                                        old('subcategory') == $subcategory->id ? 'selected' : ''
+                                                            str(old('subcategory')) === str($subcategory->id)
+                                                                ? 'selected' : ''
                                                         }}>{{ $subcategory->name }}</option>
                                                 @endforeach
                                             </select>
@@ -74,7 +78,8 @@
                                                 <option value="">Select</option>
                                                 @foreach( $child_categories as $child_category )
                                                     <option value="{{ $child_category->id }}" {{
-                                                        old('child_category') == $child_category->id ? 'selected' : ''
+                                                            str(old('child_category')) === str($child_category->id)
+                                                                ? 'selected' : ''
                                                         }}>{{ $child_category->name }}</option>
                                                 @endforeach
                                             </select>
@@ -87,21 +92,25 @@
                                             <label for="product_type">Type</label>
                                             <select name="product_type" id="product_type" class="form-control">
                                                 <option value="">Select</option>
-                                                <option value="new_arrival" {{ old('product_type') == 'new_arrival'
-                                                    ? 'selected' : '' }}>New Arrival
+                                                <option value="new_arrival" {{
+                                                    str(old('product_type')) === 'new_arrival'
+                                                        ? 'selected' : '' }}>New Arrival
                                                 </option>
                                                 <option value="featured_product" {{
-                                                    old('product_type') == 'featured_product'
+                                                    str(old('product_type')) === 'featured_product'
                                                         ? 'selected' : '' }}>Featured
                                                 </option>
-                                                <option value="top_product" {{ old('product_type') == 'top_product'
-                                                    ? 'selected' : '' }}>Top Product
+                                                <option value="top_product" {{
+                                                    str(old('product_type')) === 'top_product'
+                                                        ? 'selected' : '' }}>Top Product
                                                 </option>
-                                                <option value="best_product" {{ old('product_type') == 'best_product'
-                                                    ? 'selected' : '' }}>Best Product
+                                                <option value="best_product" {{
+                                                    str(old('product_type')) === 'best_product'
+                                                        ? 'selected' : '' }}>Best Product
                                                 </option>
-                                                <option value="basic_pack" {{ old('product_type') == 'basic_pack'
-                                                    ? 'selected' : '' }}>Basic Pack
+                                                <option value="basic_pack" {{
+                                                    str(old('product_type')) === 'basic_pack'
+                                                        ? 'selected' : '' }}>Basic Pack
                                                 </option>
                                             </select>
                                         </div>
@@ -111,10 +120,10 @@
                                             <label for="status">Status</label>
                                             <select name="status" id="status" class="form-control">
                                                 <option value="">Select</option>
-                                                <option value="1" {{ old('status') == 1
+                                                <option value="1" {{ str(old('status')) === '1'
                                                     ? 'selected' : '' }}>Active
                                                 </option>
-                                                <option value="0" {{ old('status') == 0
+                                                <option value="0" {{ str(old('status')) === '0'
                                                     ? 'selected' : '' }}>Inactive
                                                 </option>
                                             </select>
@@ -122,7 +131,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="sku">SKU</label>
+                                            <label for="sku">SKU (Optional)</label>
                                             <input type="text" name="sku" id="sku" class="form-control"
                                                    value="{{ old('sku') }}">
                                         </div>
