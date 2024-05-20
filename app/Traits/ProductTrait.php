@@ -59,6 +59,10 @@ trait ProductTrait
         $product->offer_end_date = $request->input('offer_end_date');
         $product->status = $request->input('status');
 
+        if (!$vendor) {
+            $product->product_type = $request->input('product_type');
+        }
+
         if (!$update) {
             $product->is_approved = $vendor ? 0 : 1;
         }

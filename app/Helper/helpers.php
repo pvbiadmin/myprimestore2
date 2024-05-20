@@ -28,6 +28,15 @@ function setActive(array $routes): string
 }
 
 /**
+ * @param $val
+ * @return bool
+ */
+function hasVal($val): bool
+{
+    return isset($val) && !empty($val);
+}
+
+/**
  * Checks product discount state
  *
  * @param $product
