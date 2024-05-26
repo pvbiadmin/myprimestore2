@@ -26,7 +26,7 @@
     }
 
     if ($result) {
-        switch (key($result)) {
+        switch (key($cat_product_slider2)) {
             case 'subcategory':
                 $category = \App\Models\Subcategory::query()
                     ->findOrFail($result['subcategory']);
@@ -35,9 +35,10 @@
                     ->withCount('reviews')
                     ->with(['variants', 'category', 'imageGallery'])
                     ->where('subcategory_id', '=', $result['subcategory'])
-                    ->orderBy('id', 'DESC')->take(12)->get();
+                    ->orderBy('id', 'DESC')->take(12)
+                    ->get();
                 $search['subcategory'] = $category->slug;
-            break;
+                break;
             case 'child_category':
                 $category = \App\Models\ChildCategory::query()
                 ->findOrFail($result['child_category']);
@@ -48,7 +49,7 @@
                     ->where('child_category_id', '=', $result['child_category'])
                     ->orderBy('id', 'DESC')->take(12)->get();
                 $search['child_category'] = $category->slug;
-            break;
+                break;
             default:
                 $category = \App\Models\Category::query()
                     ->findOrFail($result['category']);
@@ -59,7 +60,7 @@
                     ->where('category_id', '=', $result['category'])
                     ->orderBy('id', 'DESC')->take(12)->get();
                 $search['category'] = $category->slug;
-            break;
+                break;
         }
     }
 @endphp

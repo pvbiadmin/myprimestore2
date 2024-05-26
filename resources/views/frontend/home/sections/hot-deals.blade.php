@@ -110,7 +110,8 @@
                                     @endif
                                 </div>
                                 <div class="col-12 mt-lg-4">
-                                    <div class="wsus__single_banner_content">
+                                    @if ( @$homepage_section_banner_three->banner_three->status == 1 )
+                                        <div class="wsus__single_banner_content">
                                         <a href="{{ @$homepage_section_banner_three->banner_three->banner_url }}"
                                            class="wsus__single_banner_img">
                                             <img class="img-fluid w-100" alt="banner" src="{{
@@ -141,6 +142,7 @@
                                             </div>
                                         @endif
                                     </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

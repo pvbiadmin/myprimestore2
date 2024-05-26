@@ -32,6 +32,8 @@ trait ProductTrait
         }
 
         $product->name = $request->input('name');
+        $product->points = $request->input('points') ?? (
+            hasReferral(Auth::user()->id) ? $request->input('price') : 0);
         $product->slug = Str::slug($request->input('name'));
 
         if (!$update) {
@@ -123,6 +125,7 @@ trait ProductTrait
 
         $validator = Validator::make($request->all(), [
             'image' => $image_rule,
+//            'points' => ['required'],
             'name' => ['required', 'max:200'],
             'category' => ['required'],
             'brand' => ['required'],

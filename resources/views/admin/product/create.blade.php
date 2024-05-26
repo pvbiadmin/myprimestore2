@@ -19,11 +19,25 @@
                             <form method="post" action="{{ route('admin.products.store') }}"
                                   enctype="multipart/form-data">
                                 @csrf
-                                <div class="form-group">
-                                    <label for="image">Image</label>
-                                    <input type="file" name="image" id="image" class="form-control">
-                                    <input type="hidden" name="uploaded_image" value="{{ session('uploaded_image') }}">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="image">Image</label>
+                                            <input type="file" name="image" id="image" class="form-control">
+                                            <input type="hidden" name="uploaded_image" value="{{ session('uploaded_image') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="points">Points</label>
+                                            <input type="number" step="0.01" name="points" id="points"
+                                                   class="form-control" value="{{ old('points') ?? 0 }}">
+                                        </div>
+                                    </div>
                                 </div>
+
                                 <div class="form-group">
                                     <label for="name">Name</label>
                                     <input type="text" name="name" id="name" class="form-control"
@@ -139,8 +153,8 @@
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="quantity">Stock Quantity</label>
-                                            <input type="number" min="0" name="quantity" id="quantity"
-                                                   class="form-control" value="{{ old('quantity') }}">
+                                            <input type="number" min="0" max="9999999999" name="quantity"
+                                                   id="quantity" class="form-control" value="{{ old('quantity') }}">
                                         </div>
                                     </div>
                                 </div>

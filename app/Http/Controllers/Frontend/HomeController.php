@@ -12,7 +12,6 @@ use App\Models\FlashSaleItem;
 use App\Models\HomePageSetting;
 use App\Models\Product;
 use App\Models\Slider;
-use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -20,7 +19,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
@@ -28,7 +26,7 @@ class HomeController extends Controller
     /**
      * View Home Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function index(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -89,7 +87,7 @@ class HomeController extends Controller
     /**
      * Flash Sale
      *
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder|null
+     * @return Model|Builder|null
      */
     public function flashSale(): Model|Builder|null
     {
@@ -99,7 +97,7 @@ class HomeController extends Controller
     /**
      * Flash Sale Items
      *
-     * @return \Illuminate\Database\Eloquent\Collection|array
+     * @return Collection|array
      */
     public function flashSaleItems(): Collection|array
     {
@@ -110,7 +108,7 @@ class HomeController extends Controller
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder|null
+     * @return Model|Builder|null
      */
     public function popularCategories(): Model|Builder|null
     {
@@ -121,7 +119,7 @@ class HomeController extends Controller
     /**
      * Category Product Slider
      *
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder|null
+     * @return Model|Builder|null
      */
     public function categoryProductSlider(): Model|Builder|null
     {
@@ -132,7 +130,7 @@ class HomeController extends Controller
     /**
      * Brands
      *
-     * @return \Illuminate\Database\Eloquent\Collection|array
+     * @return Collection|array
      */
     public function brands(): Collection|array
     {
@@ -163,7 +161,7 @@ class HomeController extends Controller
      * New Arrival Type Products
      *
      * @param $type
-     * @return \Illuminate\Database\Eloquent\Collection|array
+     * @return Collection|array
      */
     public function getProductType($type): Collection|array
     {
@@ -179,7 +177,7 @@ class HomeController extends Controller
     }
 
     /**
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function vendorsPage(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -190,7 +188,7 @@ class HomeController extends Controller
 
     /**
      * @param string $id
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function vendorProductsPage(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {

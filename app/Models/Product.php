@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -27,6 +30,7 @@ use Illuminate\Support\Str;
  * @property string|null $video_link
  * @property string|null $sku
  * @property float $price
+ * @property float $points
  * @property float|null $offer_price
  * @property string|null $offer_start_date
  * @property string|null $offer_end_date
@@ -35,17 +39,17 @@ use Illuminate\Support\Str;
  * @property int $is_approved
  * @property string|null $seo_title
  * @property string|null $seo_description
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Brand|null $brand
- * @property-read \App\Models\Category|null $category
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductImageGallery> $imageGallery
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Brand|null $brand
+ * @property-read Category|null $category
+ * @property-read Collection<int, ProductImageGallery> $imageGallery
  * @property-read int|null $image_gallery_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductReview> $reviews
+ * @property-read Collection<int, ProductReview> $reviews
  * @property-read int|null $reviews_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductVariant> $variants
+ * @property-read Collection<int, ProductVariant> $variants
  * @property-read int|null $variants_count
- * @property-read \App\Models\Vendor|null $vendor
+ * @property-read Vendor|null $vendor
  * @method static Builder|Product newModelQuery()
  * @method static Builder|Product newQuery()
  * @method static Builder|Product query()
@@ -74,14 +78,14 @@ use Illuminate\Support\Str;
  * @method static Builder|Product whereUpdatedAt($value)
  * @method static Builder|Product whereVendorId($value)
  * @method static Builder|Product whereVideoLink($value)
- * @mixin \Eloquent
+ * @mixin Eloquent
  */
 class Product extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'thumb_image', 'vendor_id', 'category_id',
+        'name', 'points', 'slug', 'thumb_image', 'vendor_id', 'category_id',
         'subcategory_id', 'child_category_id', 'brand_id', 'quantity',
         'short_description', 'long_description', 'video_link', 'sku',
         'price', 'offer_price', 'offer_start_date', 'offer_end_date',
@@ -122,7 +126,7 @@ class Product extends Model
     /**
      * Relationship: This Model Belongs to Vendor
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function vendor(): BelongsTo
     {
@@ -132,7 +136,7 @@ class Product extends Model
     /**
      * Relationship: This Model Belongs to Category
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function category(): BelongsTo
     {
@@ -142,7 +146,7 @@ class Product extends Model
     /**
      * Relationship: This Model Belongs to Brand
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function brand(): BelongsTo
     {
@@ -152,7 +156,7 @@ class Product extends Model
     /**
      * Relationship: This Model has Many ProductImageGallery
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function imageGallery(): HasMany
     {
@@ -162,7 +166,7 @@ class Product extends Model
     /**
      * Relationship: This Model Has Many ProductVariant
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function variants(): HasMany
     {
@@ -172,7 +176,7 @@ class Product extends Model
     /**
      * Relationship: This Model has many ProductReview
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function reviews(): HasMany
     {

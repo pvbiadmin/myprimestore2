@@ -18,7 +18,11 @@
                             <div class="row">
                                 <div class="col-2">
                                     <div class="list-group" id="list-tab" role="tablist">
-                                        <a class="list-group-item list-group-item-action active"
+                                        <a class="list-group-item list-group-item-action active" id="list-gcash-list"
+                                           data-toggle="list" href="#list-gcash" role="tab">GCash</a>
+                                        <a class="list-group-item list-group-item-action" id="list-paymaya-list"
+                                           data-toggle="list" href="#list-paymaya" role="tab">Paymaya</a>
+                                        <a class="list-group-item list-group-item-action"
                                            id="list-paypal-list" data-toggle="list" href="#list-paypal"
                                            role="tab">Paypal</a>
                                         <a class="list-group-item list-group-item-action" id="list-cod-list"
@@ -27,6 +31,8 @@
                                 </div>
                                 <div class="col-10">
                                     <div class="tab-content" id="nav-tabContent">
+                                        @include( 'admin.payment-settings.gcash-setting' )
+                                        @include( 'admin.payment-settings.paymaya-setting' )
                                         @include( 'admin.payment-settings.paypal-setting' )
                                         @include( 'admin.payment-settings.cod-setting' )
                                     </div>
@@ -52,6 +58,12 @@
                     let linkId = '#list-paypal-list';
 
                     switch (anchor) {
+                        case 'list-gcash-list':
+                            linkId = '#list-gcash-list';
+                            break;
+                        case 'list-paymaya-list':
+                            linkId = '#list-paymaya-list';
+                            break;
                         case 'list-paypal-list':
                             linkId = '#list-paypal-list';
                             break;

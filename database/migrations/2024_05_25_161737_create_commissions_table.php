@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('point_transactions', function (Blueprint $table) {
-            $table->renameColumn('user_id', 'points_id'); // Rename column
+        Schema::create('commissions', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->unique();
+            $table->decimal('referral', 10)->default(0);
+            $table->decimal('unilevel', 10)->default(0);
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('point_transactions', function (Blueprint $table) {
-            $table->renameColumn('points_id', 'user_id'); // Revert renaming
-        });
+        Schema::dropIfExists('commissions');
     }
 };

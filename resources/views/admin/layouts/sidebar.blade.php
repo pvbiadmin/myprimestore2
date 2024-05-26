@@ -117,11 +117,6 @@
                 </ul>
             </li>
 
-            <li class="{{ setActive(['admin.transaction']) }}">
-                <a class="nav-link" href="{{ route('admin.transaction') }}">
-                    <i class="fas fa-exchange-alt"></i> <span>Transactions</span></a>
-            </li>
-
             <li class="dropdown {{ setActive([
                 'admin.vendor-profile.*',
                 'admin.flash-sale.*',
@@ -147,6 +142,12 @@
                     </li>
                     <li class="{{ setActive(['admin.payment-setting']) }}">
                         <a class="nav-link" href="{{ route('admin.payment-setting') }}">Payment Settings</a>
+                    </li>
+                    <li class="{{ setActive(['admin.transaction']) }}">
+                        <a class="nav-link" href="{{ route('admin.transaction') }}">Transactions</a>
+                    </li>
+                    <li class="{{ setActive(['admin.messages.index']) }}">
+                        <a class="nav-link" href="{{ route('admin.messages.index') }}">Messages</a>
                     </li>
                 </ul>
             </li>
@@ -190,12 +191,10 @@
                         <a class="nav-link" href="{{ route('admin.about.index') }}">About Page</a></li>
                     <li class="{{ setActive(['admin.terms-and-conditions.index']) }}">
                         <a class="nav-link" href="{{ route('admin.terms-and-conditions.index') }}">Terms Page</a></li>
+                    <li class="{{ setActive(['admin.advertisement.*']) }}"><a class="nav-link" href="{{
+                        route('admin.advertisement.index') }}">Advertisement</a></li>
                 </ul>
             </li>
-
-            <li><a class="nav-link {{ setActive(['admin.advertisement.*']) }}" href="{{
-                route('admin.advertisement.index') }}">
-                    <i class="fas fa-ad"></i> <span>Advertisement</span></a></li>
 
             <li class="dropdown {{ setActive([
                     'admin.blog-category.*',
@@ -217,13 +216,16 @@
                 </ul>
             </li>
 
-            <li><a class="nav-link {{ setActive(['admin.messages.index']) }}"
-                   href="{{ route('admin.messages.index') }}">
-                    <i class="fas fa-comments"></i><span>Messages</span></a></li>
-
-            <li><a class="nav-link {{ setActive(['admin.referral-code.index']) }}"
-                   href="{{ route('admin.referral-code.index') }}">
-                    <i class="fas fa-code"></i><span>Referral Code</span></a></li>
+            <li class="dropdown {{ setActive([
+                    'admin.referral.index'
+                    ]) }}">
+                <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i
+                        class="fas fa-users-cog"></i> <span>Commissions</span></a>
+                <ul class="dropdown-menu">
+                    <li class="{{ setActive(['admin.referral.index']) }}">
+                        <a class="nav-link" href="{{ route('admin.referral.index') }}">Referral</a></li>
+                </ul>
+            </li>
 
             <li class="menu-header">Settings & More</li>
 
@@ -280,7 +282,7 @@
 
             <li class="{{ setActive(['admin.settings.index']) }}">
                 <a class="nav-link" href="{{ route('admin.settings.index') }}">
-                    <i class="fas fa-cog"></i> <span>Settings</span></a>
+                    <i class="fas fa-cog"></i> <span>Site Settings</span></a>
             </li>
         </ul>
     </aside>

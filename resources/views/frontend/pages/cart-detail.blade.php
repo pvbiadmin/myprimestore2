@@ -103,7 +103,7 @@
                                             <td class="wsus__pro_select">
                                                 <div class="product_qty_wrapper">
                                                     @if ( $item->options->is_package
-                                                        && $item->options->is_package == 1 )
+                                                        && str($item->options->is_package) === '1' )
                                                         {{ $item->qty }}
                                                     @else
                                                         <button class="decrement-cart-qty less-cart-qty">-</button>
@@ -139,7 +139,7 @@
                                     number_format(couponDiscount(), 2) }}</span></p>
                             <p class="total"><span>total:</span> <span id="cart-total">{{
                                 $settings->currency_icon . number_format(cartTotal(), 2) }}</span></p>
-                            @if ( $cart_package && $cart_package[0]->options->is_package == 1 )
+                            @if ( $cart_package && str($cart_package[0]->options->is_package) === '1' )
                                 <form id="referral_form">
                                     <input type="text" name="referral" value="{{ session()->has('referral')
                                         ? session('referral')['code'] : '' }}"
@@ -175,63 +175,69 @@
     <section id="wsus__single_banner">
         <div class="container">
             <div class="row">
-                <div class="col-xl-6 col-lg-6">
-                    @if ( @$cart_page_banner_section->banner_one->status == 1 )
-                        <div class="wsus__single_banner_content">
-                            <a class="wsus__single_banner_img" href="{{
+                @if ( @$cart_page_banner_section )
+                    @if ( @$cart_page_banner_section->banner_one )
+                        <div class="col-xl-6 col-lg-6">
+                            @if ( str(@$cart_page_banner_section->banner_one->status) === '1' )
+                                <div class="wsus__single_banner_content">
+                                    <a class="wsus__single_banner_img" href="{{
                                 @$cart_page_banner_section->banner_one->banner_url }}">
-                                <img src="{{ asset(@$cart_page_banner_section->banner_one->banner_image) }}"
-                                     alt="banner" class="img-fluid w-100">
-                            </a>
-                            @if ( @$cart_page_banner_section->banner_one->hook_text
-                            || @$cart_page_banner_section->banner_one->highlight_text
-                            || @$cart_page_banner_section->banner_one->followup_text
-                            || @$cart_page_banner_section->banner_one->button_text )
-                                <div class="wsus__single_banner_text">
-                                    <h6>@if ( @$cart_page_banner_section->banner_one->hook_text ){{
+                                        <img src="{{ asset(@$cart_page_banner_section->banner_one->banner_image) }}"
+                                             alt="banner" class="img-fluid w-100">
+                                    </a>
+                                    @if ( @$cart_page_banner_section->banner_one->hook_text
+                                    || @$cart_page_banner_section->banner_one->highlight_text
+                                    || @$cart_page_banner_section->banner_one->followup_text
+                                    || @$cart_page_banner_section->banner_one->button_text )
+                                        <div class="wsus__single_banner_text">
+                                            <h6>@if ( @$cart_page_banner_section->banner_one->hook_text ){{
                                     @$cart_page_banner_section->banner_one->hook_text }}@endif @if(
                                     @$cart_page_banner_section->banner_one->highlight_text )<span>{{
                                 @$cart_page_banner_section->banner_one->highlight_text }}</span>@endif</h6>
-                                    @if ( @$cart_page_banner_section->banner_one->followup_text )<h3>{{
+                                            @if ( @$cart_page_banner_section->banner_one->followup_text )<h3>{{
                                     @$cart_page_banner_section->banner_one->followup_text }}</h3>@endif
-                                    @if ( @$cart_page_banner_section->banner_one->followup_text )
-                                        <a class="shop_btn" href="{{
+                                            @if ( @$cart_page_banner_section->banner_one->followup_text )
+                                                <a class="shop_btn" href="{{
                                     @$cart_page_banner_section->banner_one->banner_url }}">{{
                                     @$cart_page_banner_section->banner_one->button_text }}</a>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                             @endif
                         </div>
                     @endif
-                </div>
-                <div class="col-xl-6 col-lg-6">
-                    @if ( @$cart_page_banner_section->banner_two->status == 1 )
-                        <div class="wsus__single_banner_content single_banner_2">
-                            <a class="wsus__single_banner_img"
-                               href="{{ @$cart_page_banner_section->banner_two->banner_url }}">
-                                <img src="{{ asset(@$cart_page_banner_section->banner_two->banner_image) }}"
-                                     alt="banner" class="img-fluid w-100">
-                            </a>
-                            @if ( @$cart_page_banner_section->banner_two->leading_text
-                                || @$cart_page_banner_section->banner_two->followup_text
-                                || @$cart_page_banner_section->banner_two->button_text )
-                                <div class="wsus__single_banner_text">
-                                    @if ( @$cart_page_banner_section->banner_two->leading_text )
-                                        <h6>{{ @$cart_page_banner_section->banner_two->leading_text }}</h6>
-                                    @endif
-                                    @if ( @$cart_page_banner_section->banner_two->followup_text )
-                                        <h3>{{ @$cart_page_banner_section->banner_two->followup_text }}</h3>
-                                    @endif
-                                    @if ( @$cart_page_banner_section->banner_two->button_text )
-                                        <a class="shop_btn" href="{{
+                    @if ( @$cart_page_banner_section->banner_two )
+                        <div class="col-xl-6 col-lg-6">
+                            @if ( str(@$cart_page_banner_section->banner_two->status) === '1' )
+                                <div class="wsus__single_banner_content single_banner_2">
+                                    <a class="wsus__single_banner_img"
+                                       href="{{ @$cart_page_banner_section->banner_two->banner_url }}">
+                                        <img src="{{ asset(@$cart_page_banner_section->banner_two->banner_image) }}"
+                                             alt="banner" class="img-fluid w-100">
+                                    </a>
+                                    @if ( @$cart_page_banner_section->banner_two->leading_text
+                                        || @$cart_page_banner_section->banner_two->followup_text
+                                        || @$cart_page_banner_section->banner_two->button_text )
+                                        <div class="wsus__single_banner_text">
+                                            @if ( @$cart_page_banner_section->banner_two->leading_text )
+                                                <h6>{{ @$cart_page_banner_section->banner_two->leading_text }}</h6>
+                                            @endif
+                                            @if ( @$cart_page_banner_section->banner_two->followup_text )
+                                                <h3>{{ @$cart_page_banner_section->banner_two->followup_text }}</h3>
+                                            @endif
+                                            @if ( @$cart_page_banner_section->banner_two->button_text )
+                                                <a class="shop_btn" href="{{
                                         @$cart_page_banner_section->banner_two->banner_url }}">{{
                                         @$cart_page_banner_section->banner_two->button_text }}</a>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                             @endif
                         </div>
                     @endif
-                </div>
+                @endif
             </div>
         </div>
     </section>

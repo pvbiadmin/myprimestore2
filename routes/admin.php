@@ -3,11 +3,12 @@
 
 use App\Http\Controllers\Backend\AboutController;
 use App\Http\Controllers\Backend\AdminListController;
-use App\Http\Controllers\Backend\AdminReferralCodeController;
+use App\Http\Controllers\Backend\AdminReferralController;
 use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\BlogCommentController;
 use App\Http\Controllers\Backend\BlogController;
 use App\Http\Controllers\Backend\CodSettingController;
+use App\Http\Controllers\Backend\GCashSettingController;
 use App\Http\Controllers\Backend\ManageUserController;
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\AdminReviewController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Backend\FooterSocialController;
 use App\Http\Controllers\Backend\HomePageSettingController;
 use App\Http\Controllers\Backend\MessageController;
 use App\Http\Controllers\Backend\OrderController;
+use App\Http\Controllers\Backend\PaymayaSettingController;
 use App\Http\Controllers\Backend\PaymentSettingController;
 use App\Http\Controllers\Backend\PaypalSettingController;
 use App\Http\Controllers\Backend\ProductController;
@@ -45,6 +47,7 @@ use App\Http\Controllers\Backend\VendorApplicationController;
 use App\Http\Controllers\Backend\VendorConditionController;
 use App\Http\Controllers\Backend\VendorListController;
 use App\Http\Controllers\Backend\WithdrawMethodController;
+use App\Traits\RouteTrait;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -138,17 +141,7 @@ Route::resource('products-variant', ProductVariantController::class);
  * Products Variant Option Routes
  */
 Route::controller(ProductVariantOptionController::class)->group(function () {
-    Route::as('products-variant-option.')->group(function () {
-        Route::put('products-variant-option/change-status', 'changeStatus')->name('change-status');
-        Route::put('products-variant-option/change-is-default', 'changeIsDefault')
-            ->name('change-is-default');
-        Route::get('products-variant-option/{productId}/{variantId}', 'index')->name('index');
-        Route::get('products-variant-option/create/{productId}/{variantId}', 'create')->name('create');
-        Route::post('products-variant-option', 'store')->name('store');
-        Route::get('products-variant-option-edit/{variantOptionId}', 'edit')->name('edit');
-        Route::put('products-variant-option-update/{variantOptionId}', 'update')->name('update');
-        Route::delete('products-variant-option/{variantOptionId}', 'destroy')->name('destroy');
-    });
+    RouteTrait::productVariantOptionRoute();
 });
 
 /** reviews routes */
@@ -241,11 +234,15 @@ Route::controller(MessageController::class)->group(function () {
 });
 
 /** Referral code route */
-Route::controller(AdminReferralCodeController::class)->group(function () {
+Route::controller(AdminReferralController::class)->group(function () {
+    Route::as('referral.')->group(function () {
+        Route::get('referral', 'index')->name('index');
+        Route::put('referral/settings/update/{id}', 'updateReferralSettings')
+            ->name('settings.update');
+    });
     Route::as('referral-code.')->group(function () {
-        Route::get('referral-code', 'index')->name('index');
-        Route::get('referral-code/generate', 'generateCode')->name('generate');
-        Route::post('referral-code/send', 'sendCode')->name('send');
+        Route::get('generate', 'generateCode')->name('generate');
+        Route::post('send', 'sendCode')->name('send');
     });
 });
 
@@ -403,5 +400,7 @@ Route::resource('footer-grid-three', FooterGridThreeController::class);
  */
 Route::get('payment-setting', [PaymentSettingController::class, 'index'])->name('payment-setting');
 Route::resource('paypal-setting', PaypalSettingController::class);
-
 Route::put('cod-setting/{id}', [CodSettingController::class, 'update'])->name('cod-setting.update');
+Route::put('gcash-setting/{id}', [GCashSettingController::class, 'update'])->name('gcash-setting.update');
+Route::put('paymaya-setting/{id}', [PaymayaSettingController::class, 'update'])
+    ->name('paymaya-setting.update');

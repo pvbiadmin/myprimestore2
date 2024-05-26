@@ -5,29 +5,38 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Helper\MailHelper;
 use App\Mail\SendReferralCode;
+use App\Models\ReferralSetting;
 use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Vinkla\Hashids\Facades\Hashids;
 
-class AdminReferralCodeController extends Controller
+class AdminReferralController extends Controller
 {
     /**
      * View Referral Code Generation Page
      *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function index()
     {
-        return view('admin.referral-code.index');
+        $referralSettings = ReferralSetting::first();
+
+        return view('admin.commissions.referral.index', compact('referralSettings'));
     }
 
     /**
      * Generate Referral Code
      *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Foundation\Application|\Illuminate\Http\Response
+     * @return Application|ResponseFactory|\Illuminate\Foundation\Application|Response
      */
     public function generateCode()
     {
@@ -49,10 +58,10 @@ class AdminReferralCodeController extends Controller
     /**
      * Send Referral Code to User
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse|null
      */
-    public function sendCode(Request $request)
+    public function sendCode(Request $request): ?RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'referral_code' => 'required|alpha_num',
@@ -85,5 +94,44 @@ class AdminReferralCodeController extends Controller
             return redirect()->back()
                 ->with('error', 'Failed to send referral code. Please try again later.');
         }
+    }
+
+    /**
+     * Update Referral Settings
+     *
+     * @param Request $request
+     * @param string $id
+     * @return RedirectResponse
+     */
+    public function updateReferralSettings(Request $request, string $id): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'bonus' => ['required'],
+            'points' => ['required'],
+        ]);
+
+        try {
+            $validator->validate();
+        } catch (ValidationException $e) {
+            $error = $e->validator->errors()->first();
+            return redirect()->back()->with([
+                'anchor' => 'list-settings-list',
+                'message' => $error,
+                'alert-type' => 'error'
+            ]);
+        }
+
+        ReferralSetting::updateOrCreate(
+            ['id' => $id],
+            [
+                'bonus' => $request->input('bonus'),
+                'points' => $request->input('points'),
+            ]
+        );
+
+        return redirect()->back()->with([
+            'anchor' => 'list-settings-list',
+            'message' => 'Updated Successfully!'
+        ]);
     }
 }

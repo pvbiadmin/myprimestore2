@@ -1,40 +1,3 @@
-@extends( 'vendor.layouts.master' )
-
-@section( 'title' )
-    {{ $settings->site_name }} || Order
-@endsection
-
-@section( 'content' )
-    <!--=============================
-    DASHBOARD START
-  ==============================-->
-    <section id="wsus__dashboard">
-        <div class="container-fluid">
-
-            @include( 'frontend.dashboard.layouts.sidebar' )
-
-            <div class="row">
-                <div class="col-xl-9 col-xxl-10 col-lg-9 ms-auto">
-                    <div class="dashboard_content mt-2 mt-md-0">
-                        <h3><i class="fas fa-box-open"></i> Orders</h3>
-                        <div class="wsus__dashboard_profile">
-                            <div class="wsus__dash_pro_area">
-                                {{ $dataTable->table() }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!--=============================
-      DASHBOARD START
-    ==============================-->
-@endsection
-
-@push( 'scripts' )
-    {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
-@endpush
 @php
     $order = $order ?? null;
     $address = json_decode($order->order_address);
@@ -93,7 +56,15 @@
                                                     <h5>Order ID: {{ $order->invoice_id }}</h5>
                                                     <h6>Order Status: {{ config('order_status.admin')[
                                                         $order->order_status]['status'] }}</h6>
-                                                    <p>Payment Method: {{ ucwords($order->payment_method) }}</p>
+                                                    @if ( $order->payment_method === 'GCASH' )
+                                                        <p>Payment Method: <a href="javascript:" data-bs-toggle="modal"
+                                                                              data-bs-target="#gcashModal">{{
+                                                            ucwords($order->payment_method) }}</a></p>
+                                                    @elseif ( $order->payment_method === 'PAYMAYA' )
+                                                        <p>Payment Method: <a href="javascript:" data-bs-toggle="modal"
+                                                                              data-bs-target="#paymayaModal">{{
+                                                            ucwords($order->payment_method) }}</a></p>
+                                                    @else {{ ucwords($order->payment_method) }} @endif
                                                     <p>Payment Status: {{ $order->payment_status === 0
                                                         ? 'Pending' : 'Completed' }}</p>
                                                     <p>Transaction ID: {{ $order->transaction->transaction_id }}</p>
@@ -186,6 +157,50 @@
     <!--=============================
       DASHBOARD START
     ==============================-->
+
+    <!-- GCash Modal -->
+    <div class="modal fade" id="gcashModal" tabindex="-1" aria-labelledby="gcashModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="messageModalLabel">GCash Details</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <h5>Please settle your GCash Payment using the following details:</h5>
+                        <p><b>Account Name:</b> {{ \App\Models\GcashSetting::query()->first()->name }}</p>
+                        <p><b>GCash Number:</b> {{ \App\Models\GcashSetting::query()->first()->number }}</p>
+                        <p><b>Amount:</b> {{ $settings->currency_icon .
+                                number_format($order->amount, 2) }}</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Paymaya Modal -->
+    <div class="modal fade" id="paymayaModal" tabindex="-1" aria-labelledby="paymayaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="messageModalLabel">Paymaya Details</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <h5>Please settle your Paymaya Payment using the following details:</h5>
+                        <p><b>Account Name:</b> {{ \App\Models\PaymayaSetting::query()->first()->name }}</p>
+                        <p><b>Paymaya Number:</b> {{ \App\Models\PaymayaSetting::query()->first()->number }}</p>
+                        <p><b>Amount:</b> {{ $settings->currency_icon .
+                                number_format($order->amount, 2) }}</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push( 'scripts' )

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\GeneralSetting;
+use App\Models\Referral;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\Session;
 use JetBrains\PhpStorm\Pure;
@@ -89,6 +90,20 @@ function productType($type): string
 function displayNumber($number, $decimal): string
 {
     return number_format($number, (str_contains($number, '.') ? $decimal : 0));
+}
+
+/**
+ * Checks if user has referral
+ *
+ * @param $userId
+ * @return bool
+ */
+function hasReferral($userId): bool
+{
+    $hasReferral = Referral::where(['referrer_id' => $userId])
+        ->orWhere(['referred_id' => $userId])->first();
+
+    return $hasReferral !== null;
 }
 
 /**
@@ -231,7 +246,7 @@ function currencyList(?string $code = null, bool $decode_html_entity = true): ar
 
     if (!is_null($code)) {
         return array_values(array_filter(
-            $currencies, static fn($c) => strtolower($c['code']) === strtolower($code)))[0] ?? null;
+                $currencies, static fn($c) => strtolower($c['code']) === strtolower($code)))[0] ?? null;
     }
 
     return $currencies;
@@ -1015,8 +1030,8 @@ function cartPackage(): array
 {
     $cart_package = [];
 
-    if ( isset(session('cart')['default']) && session()->has('cart') ) {
-        foreach (session('cart')['default'] as $val ) {
+    if (isset(session('cart')['default']) && session()->has('cart')) {
+        foreach (session('cart')['default'] as $val) {
             if ($val->options->is_package === '1') {
                 $cart_package[] = $val;
             }

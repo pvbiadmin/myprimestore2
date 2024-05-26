@@ -32,35 +32,47 @@
 
             switch (key($result)) {
                 case 'subcategory':
-                    $category = \App\Models\Subcategory::query()
+                    if (isset($result['subcategory'])) {
+                        $category = \App\Models\Subcategory::query()
                         ->findOrFail($result['subcategory']);
-                    $products = \App\Models\Product::query()
-                        ->withAvg('reviews', 'rating')
-                        ->where('subcategory_id', '=', $result['subcategory'])
-                        ->orderBy('id', 'DESC')->take(12)->get();
+                        $products = \App\Models\Product::query()
+                            ->withAvg('reviews', 'rating')
+                            ->where('subcategory_id', '=', $result['subcategory'])
+                            ->orderBy('id', 'DESC')->take(12)->get();
+                    }
                 break;
                 case 'child_category':
-                    $category = \App\Models\ChildCategory::query()
-                        ->findOrFail($result['child_category']);
-                    $products = \App\Models\Product::query()
-                        ->withAvg('reviews', 'rating')
-                        ->where('child_category_id', '=', $result['child_category'])
-                        ->orderBy('id', 'DESC')->take(12)->get();
+                    if (isset($result['child_category'])) {
+                        $category = \App\Models\ChildCategory::query()
+                            ->findOrFail($result['child_category']);
+                        $products = \App\Models\Product::query()
+                            ->withAvg('reviews', 'rating')
+                            ->where('child_category_id', '=', $result['child_category'])
+                            ->orderBy('id', 'DESC')->take(12)->get();
+                    }
+                break;
+                case 'category':
+                    if (isset($result['category'])) {
+                        $category = \App\Models\Category::query()
+                            ->findOrFail($result['category']);
+                        $products = \App\Models\Product::query()
+                            ->withAvg('reviews', 'rating')
+                            ->where('category_id', '=', $result['category'])
+                            ->orderBy('id', 'DESC')->take(12)->get();
+                    }
                 break;
                 default:
-                    $category = \App\Models\Category::query()
-                        ->findOrFail($result['category']);
-                    $products = \App\Models\Product::query()
-                        ->withAvg('reviews', 'rating')
-                        ->where('category_id', '=', $result['category'])
-                        ->orderBy('id', 'DESC')->take(12)->get();
+                    $category = null;
+                    $products = null;
                 break;
             }
 
-            $col_sliders[] = [
-                'category' => $category,
-                'products' => $products
-            ];
+            if (isset($category, $products)) {
+                $col_sliders[] = [
+                    'category' => $category,
+                    'products' => $products
+                ];
+            }
         }
     }
 @endphp

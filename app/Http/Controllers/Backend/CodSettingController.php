@@ -4,13 +4,21 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\CodSetting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class CodSettingController extends Controller
 {
-    public function update(Request $request, string $id)
+    /**
+     * Update COD Settings
+     *
+     * @param Request $request
+     * @param string $id
+     * @return RedirectResponse
+     */
+    public function update(Request $request, string $id): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'status' => ['required', 'integer'],
@@ -29,7 +37,7 @@ class CodSettingController extends Controller
 
         CodSetting::query()->updateOrCreate(
             ['id' => $id],
-            ['status' => $request->status,]
+            ['status' => $request->input('status'),]
         );
 
         return redirect()->back()->with([

@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('point_transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('point_id');
             $table->string('type'); // credit or debit
-            $table->decimal('points', 10, 2);
+            $table->decimal('points', 10);
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+//            $table->foreign('point_id')
+//                ->references('id')
+//                ->on('points')
+//                ->onDelete('cascade');
         });
     }
 

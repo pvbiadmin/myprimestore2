@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\OrderProduct
@@ -18,26 +21,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float|null $product_variant_price_total
  * @property float $unit_price
  * @property int $quantity
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Order|null $order
- * @property-read \App\Models\Product|null $product
- * @property-read \App\Models\Vendor|null $vendor
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct query()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereProductId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereProductName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereProductVariant($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereProductVariantPriceTotal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereQuantity($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereUnitPrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct whereVendorId($value)
- * @mixin \Eloquent
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Order|null $order
+ * @property-read Product|null $product
+ * @property-read Vendor|null $vendor
+ * @method static Builder|OrderProduct newModelQuery()
+ * @method static Builder|OrderProduct newQuery()
+ * @method static Builder|OrderProduct query()
+ * @method static Builder|OrderProduct whereCreatedAt($value)
+ * @method static Builder|OrderProduct whereId($value)
+ * @method static Builder|OrderProduct whereOrderId($value)
+ * @method static Builder|OrderProduct whereProductId($value)
+ * @method static Builder|OrderProduct whereProductName($value)
+ * @method static Builder|OrderProduct whereProductVariant($value)
+ * @method static Builder|OrderProduct whereProductVariantPriceTotal($value)
+ * @method static Builder|OrderProduct whereQuantity($value)
+ * @method static Builder|OrderProduct whereUnitPrice($value)
+ * @method static Builder|OrderProduct whereUpdatedAt($value)
+ * @method static Builder|OrderProduct whereVendorId($value)
+ * @mixin Eloquent
  */
 class OrderProduct extends Model
 {
@@ -46,7 +49,7 @@ class OrderProduct extends Model
     /**
      * This Product Order Belongs to Vendor
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function vendor(): BelongsTo
     {
@@ -56,7 +59,7 @@ class OrderProduct extends Model
     /**
      * This Product Order Belongs to Product
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function product(): BelongsTo
     {
@@ -64,7 +67,7 @@ class OrderProduct extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function order(): BelongsTo
     {

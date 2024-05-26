@@ -11,7 +11,7 @@ class PointTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'points_id', 'type', 'points',
+        'point_id', 'type', 'points',
     ];
 
     public function user(): BelongsTo

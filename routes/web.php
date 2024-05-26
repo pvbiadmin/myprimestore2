@@ -206,9 +206,14 @@ Route::group([
     Route::controller(PaymentController::class)->group(function () {
         Route::get('payment', 'index')->name('payment');
         Route::get('payment/success', 'paymentSuccess')->name('payment.success');
+        Route::get('payment/cod', 'paymentCod')->name('payment.cod');
+        Route::get('payment/gcash/{order_id}/{payable}', 'paymentGcash')->name('payment.gcash');
+        Route::get('payment/paymaya/{order_id}/{payable}', 'paymentPaymaya')->name('payment.paymaya');
         Route::get('paypal/payment', 'payWithPaypal')->name('paypal.payment');
         Route::get('paypal/success', 'paypalSuccess')->name('paypal.success');
         Route::get('paypal/cancel', 'paypalCancel')->name('paypal.cancel');
         Route::get('cod/payment', 'payWithCod')->name('cod.payment');
+        Route::get('gcash/payment', 'payWithGCash')->name('gcash.payment');
+        Route::get('paymaya/payment', 'payWithPaymaya')->name('paymaya.payment');
     });
 });

@@ -2,24 +2,27 @@
 
 namespace App\Models;
 
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\CodSetting
  *
  * @property int $id
  * @property int $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting query()
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CodSetting whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @method static Builder|CodSetting newModelQuery()
+ * @method static Builder|CodSetting newQuery()
+ * @method static Builder|CodSetting query()
+ * @method static Builder|CodSetting whereCreatedAt($value)
+ * @method static Builder|CodSetting whereId($value)
+ * @method static Builder|CodSetting whereStatus($value)
+ * @method static Builder|CodSetting whereUpdatedAt($value)
+ * @mixin Eloquent
  */
 class CodSetting extends Model
 {

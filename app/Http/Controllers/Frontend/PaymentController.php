@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\CodSetting;
 use App\Models\Coupon;
+use App\Models\GcashSetting;
 use App\Models\GeneralSetting;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\PaymayaSetting;
 use App\Models\PaypalSetting;
 use App\Models\PointTransaction;
 use App\Models\Product;
 use App\Models\Referral;
+use App\Models\ReferralSetting;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\WalletTransaction;
@@ -24,6 +27,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use JetBrains\PhpStorm\ArrayShape;
+use JsonException;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Exception;
 use Str;
@@ -34,7 +38,7 @@ class PaymentController extends Controller
     /**
      * View Payment Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application|RedirectResponse
      */
     public function index(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application|RedirectResponse
     {
@@ -43,19 +47,57 @@ class PaymentController extends Controller
             return redirect()->route('user.checkout');
         }
 
-        /*dd($this->updateCoupon());*/
-
         return view('frontend.pages.payment');
     }
 
     /**
      * View Payment Success Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function paymentSuccess(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
         return view('frontend.pages.payment-success');
+    }
+
+    /**
+     * View Payment COD Page
+     *
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+     */
+    public function paymentCod(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+    {
+        return view('frontend.pages.payment-cod');
+    }
+
+    /**
+     * View Payment GCash Page
+     *
+     * @param $order_id
+     * @param $payable
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+     */
+    public function paymentGCash($order_id, $payable): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+    {
+        $gcashSettings = GcashSetting::first();
+
+        return view('frontend.pages.payment-gcash',
+            compact('gcashSettings', 'order_id', 'payable'));
+    }
+
+    /**
+     * View Payment Paymaya Page
+     *
+     * @param $order_id
+     * @param $payable
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+     */
+    public function paymentPaymaya($order_id, $payable): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+    {
+        $paymayaSettings = PaymayaSetting::first();
+
+        return view('frontend.pages.payment-paymaya',
+            compact('paymayaSettings', 'order_id', 'payable'));
     }
 
     /**
@@ -66,7 +108,7 @@ class PaymentController extends Controller
      * @param $transaction_id
      * @param $paid_amount
      * @param $paid_currency_name
-     * @return \App\Models\Order
+     * @return Order
      * @throws Exception
      */
     public function storeOrder(
@@ -85,9 +127,9 @@ class PaymentController extends Controller
         $order->product_quantity = Cart::content()->count();
         $order->payment_method = $payment_method;
         $order->payment_status = $payment_status;
-        $order->order_address = json_encode(Session::get('shipping_address'));
-        $order->shipping_method = json_encode(Session::get('shipping_rule'));
-        $order->coupon = json_encode(Session::get('coupon'));
+        $order->order_address = json_encode(Session::get('shipping_address'), JSON_THROW_ON_ERROR);
+        $order->shipping_method = json_encode(Session::get('shipping_rule'), JSON_THROW_ON_ERROR);
+        $order->coupon = json_encode(Session::get('coupon'), JSON_THROW_ON_ERROR);
         $order->order_status = 'pending';
 
         $order->save();
@@ -105,9 +147,13 @@ class PaymentController extends Controller
      * Add to sponsor wallet
      * Add to sponsor points
      *
+     * @param array $details
+     * @param string $type
+     * @param bool $activated
      * @return bool
+     * @throws JsonException
      */
-    public function referralEntry($details = [], $type = 'credit', $activated = true)
+    public function referralEntry($details = [], $type = 'credit', $activated = true): bool
     {
         $entered = false;
 
@@ -115,17 +161,52 @@ class PaymentController extends Controller
 
         if ($referral_session && isset($referral_session['id'])) {
             $referrer = User::findOrFail($referral_session['id'])->first();
-            $referred_id = auth()->user()->id;
+
+            $product = Product::where('product_type', $referral_session['package'])->first();
+
+            $referralSettings = ReferralSetting::first();
+
+            $bonus = $product->price * $referralSettings->bonus / 100;
+            $points = $product->points * $referralSettings->points / 100;
 
             // encode into referral table and activate
             Referral::create([
                 'referrer_id' => $referrer->id,
-                'referred_id' => $referred_id,
+                'referred_id' => auth()->user()->id,
                 'status' => $activated ? 1 : 0,
             ]);
 
-            $this->addToWallet($referrer, $referral_session['bonus'], $details, $type);
-            $this->addToPoints($referrer, $referral_session['points'], $details, $type);
+            $this->addToWallet($referrer, $bonus, $details, $type);
+            $this->addToPoints($referrer, $points, $details, $type);
+
+            $entered = true;
+        }
+
+        return $entered;
+    }
+
+    /**
+     * Add point rewards
+     *
+     * @throws JsonException
+     */
+    public function pointRewards($details = [], $type = 'credit'): bool
+    {
+        $entered = false;
+
+        $user = Auth::user();
+
+        $point_reward_session = Session::get('point_reward');
+
+//        dd($point_reward_session);
+
+        if ($point_reward_session && isset($point_reward_session['id'])) {
+            $product = Product::findOrFail($point_reward_session['product_id']);
+            $referralSettings = ReferralSetting::first();
+
+            $points = $product->points * $point_reward_session['quantity'] * $referralSettings->points / 100;
+
+            $this->addToPoints($user, $points, $details, $type);
 
             $entered = true;
         }
@@ -140,8 +221,9 @@ class PaymentController extends Controller
      * @param $value
      * @param array $details
      * @param string $type
+     * @throws JsonException
      */
-    public function addToWallet($user, $value, $details = [], $type = 'credit')
+    public function addToWallet($user, $value, $details = [], $type = 'credit'): void
     {
         // add bonus and points to referrer
         $wallet = $user->wallet;
@@ -151,7 +233,7 @@ class PaymentController extends Controller
             $wallet = $user->wallet()->create(['balance' => 0]);
         }
 
-        $wallet->balance += $value;
+        $wallet->balance += ($type === 'credit' ? $value : 0);
         $wallet->save();
 
         $data = [
@@ -161,7 +243,7 @@ class PaymentController extends Controller
         ];
 
         if (!empty($details)) {
-            $data['details'] = json_encode($details);
+            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
         }
 
         WalletTransaction::create($data);
@@ -174,8 +256,9 @@ class PaymentController extends Controller
      * @param $value
      * @param array $details
      * @param string $type
+     * @throws JsonException
      */
-    public function addToPoints($user, $value, $details = [], $type = 'credit')
+    public function addToPoints($user, $value, $details = [], $type = 'credit'): void
     {
         // add to user points
         $points = $user->point;
@@ -185,23 +268,23 @@ class PaymentController extends Controller
             $points = $user->point()->create(['balance' => 0]);
         }
 
-        $points->balance += $value;
+        $points->balance += ($type === 'credit' ? $value : 0);
         $points->save();
 
         $data = [
-            'wallet_id' => $points->id,
+            'point_id' => $points->id,
             'type' => $type,
-            'amount' => $value,
+            'points' => $value,
         ];
 
         if (!empty($details)) {
-            $data['details'] = json_encode($details);
+            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
         }
 
         PointTransaction::create($data);
     }
 
-    public function updateCoupon()
+    public function updateCoupon(): void
     {
         $coupon_session = Session::get('coupon');
 
@@ -212,11 +295,11 @@ class PaymentController extends Controller
             // Check if the coupon was found
             if ($coupon_tbl) {
                 // Increment total_use
-                $coupon_tbl->total_use += 1;
+                ++$coupon_tbl->total_use;
 
                 // If total_use reaches max_use, update quantity
                 if ($coupon_tbl->total_use === $coupon_tbl->max_use) {
-                    $coupon_tbl->quantity -= 1;
+                    --$coupon_tbl->quantity;
                 }
 
                 $coupon_tbl->save();
@@ -228,8 +311,9 @@ class PaymentController extends Controller
      * Store All Ordered Products
      *
      * @param $order_id
+     * @throws JsonException
      */
-    public function storeOrderProduct($order_id)
+    public function storeOrderProduct($order_id): void
     {
         $cart_items = Cart::content();
 
@@ -243,7 +327,7 @@ class PaymentController extends Controller
                 $order_product->product_id = $product->id;
                 $order_product->vendor_id = $product->vendor_id;
                 $order_product->product_name = $product->name;
-                $order_product->product_variant = json_encode($item->options->variants);
+                $order_product->product_variant = json_encode($item->options->variants, JSON_THROW_ON_ERROR);
                 $order_product->product_variant_price_total = $item->options->variant_price_total;
                 $order_product->unit_price = $item->price;
                 $order_product->quantity = $item->qty;
@@ -268,7 +352,7 @@ class PaymentController extends Controller
      * @param $paid_currency_name
      */
     public function storeOrderTransaction(
-        $order_id, $transaction_id, $payment_method, $paid_amount, $paid_currency_name)
+        $order_id, $transaction_id, $payment_method, $paid_amount, $paid_currency_name): void
     {
         $transaction = new Transaction();
 
@@ -285,7 +369,7 @@ class PaymentController extends Controller
     /**
      * Clear Session
      */
-    public function clearSession()
+    public function clearSession(): void
     {
         Cart::destroy();
 
@@ -360,7 +444,7 @@ class PaymentController extends Controller
     /**
      * Handle payment with PayPal.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      * @throws Exception|Throwable
      */
     public function payWithPaypal(): RedirectResponse
@@ -450,8 +534,8 @@ class PaymentController extends Controller
     /**
      * Handle successful PayPal payment.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function paypalSuccess(Request $request): RedirectResponse
@@ -462,13 +546,13 @@ class PaymentController extends Controller
             $provider = new PayPalClient($config);
             $provider->getAccessToken();
 
-            $response = $provider->capturePaymentOrder($request->token);
+            $response = $provider->capturePaymentOrder($request->input('token'));
 
             // Check if $response is not null and has 'status' and 'id' keys
             if ($response && isset($response['status'], $response['id']) && $response['status'] === 'COMPLETED') {
                 $paypal_setting = PaypalSetting::query()->firstOrFail();
 
-                $this->storeOrder(
+                $order = $this->storeOrder(
                     'paypal',
                     1,
                     $response['id'],
@@ -476,9 +560,10 @@ class PaymentController extends Controller
                     $paypal_setting->currency_name
                 );
 
-                if ($this->referralEntry()) {
-                    $this->clearSession();
-                }
+                $this->referralEntry(['order_id' => $order->id]);
+                $this->pointRewards(['order_id' => $order->id]);
+
+                $this->clearSession();
 
                 return redirect()->route('user.payment.success');
             }
@@ -495,7 +580,7 @@ class PaymentController extends Controller
     /**
      * Handle Payment Error
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function paypalCancel(): RedirectResponse
     {
@@ -509,8 +594,8 @@ class PaymentController extends Controller
     /**
      * Cash-on-Delivery Payment
      *
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Exception
+     * @return RedirectResponse
+     * @throws Exception
      */
     public function payWithCod(): RedirectResponse
     {
@@ -532,10 +617,85 @@ class PaymentController extends Controller
             $setting->currency_name
         );
 
-        if ($this->referralEntry(['order_id' => $order->id], 'pending_credit', false)) {
-            $this->clearSession();
+        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+
+        $this->clearSession();
+
+        return redirect()->route('user.payment.cod');
+    }
+
+    /**
+     * GCash Payment
+     *
+     * @return RedirectResponse
+     * @throws Exception
+     */
+    public function payWithGCash(): RedirectResponse
+    {
+        $gcashSettings = GcashSetting::first();
+        $setting = GeneralSetting::first();
+
+        if ($gcashSettings && $gcashSettings->status === 0) {
+            return redirect()->back();
         }
 
-        return redirect()->route('user.payment.success');
+        // amount calculation
+        $payableAmount = round(payableTotal(), 2);
+
+        $order = $this->storeOrder(
+            'GCASH',
+            0,
+            Str::random(10),
+            $payableAmount,
+            $setting->currency_name
+        );
+
+        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+
+        $this->clearSession();
+
+        return redirect()->route('user.payment.gcash', [
+            'order_id' => $order->id,
+            'payable' => $payableAmount
+        ]);
+    }
+
+    /**
+     * Paymaya Payment
+     *
+     * @return RedirectResponse
+     * @throws Exception
+     */
+    public function payWithPaymaya(): RedirectResponse
+    {
+        $paymayaSettings = PaymayaSetting::first();
+        $setting = GeneralSetting::first();
+
+        if ($paymayaSettings && $paymayaSettings->status === 0) {
+            return redirect()->back();
+        }
+
+        // amount calculation
+        $payableAmount = round(payableTotal(), 2);
+
+        $order = $this->storeOrder(
+            'PAYMAYA',
+            0,
+            Str::random(10),
+            $payableAmount,
+            $setting->currency_name
+        );
+
+        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+
+        $this->clearSession();
+
+        return redirect()->route('user.payment.paymaya', [
+            'order_id' => $order->id,
+            'payable' => $payableAmount
+        ]);
     }
 }

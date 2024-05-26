@@ -20,6 +20,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use JsonException;
 use Vinkla\Hashids\Facades\Hashids;
 
 class CartController extends Controller
@@ -27,8 +28,8 @@ class CartController extends Controller
     /**
      * Add products to Cart
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function addToCart(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -85,6 +86,8 @@ class CartController extends Controller
 
         Cart::add($cart_data);
 
+        $this->applyRewards($product_id, $quantity);
+
         return response([
             'status' => 'success',
             'message' => 'Product Added to Cart.'
@@ -94,8 +97,8 @@ class CartController extends Controller
     /**
      * View Cart Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
-     * @throws \JsonException
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
+     * @throws JsonException
      */
     public function cartDetails(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -106,8 +109,9 @@ class CartController extends Controller
         }
 
         $cart_page_banner_section = Advertisement::where('key', 'cart_page_banner_section')->first();
-        $cart_page_banner_section = json_decode(
-            $cart_page_banner_section?->value, false, 512, JSON_THROW_ON_ERROR);
+
+        $cart_page_banner_section = $cart_page_banner_section ? json_decode(
+            $cart_page_banner_section->value, false, 512, JSON_THROW_ON_ERROR) : null;
 
         return view('frontend.pages.cart-detail',
             compact('cart_items', 'cart_page_banner_section'));
@@ -116,8 +120,8 @@ class CartController extends Controller
     /**
      * Update Product Quantity
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function updateProductQty(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -188,7 +192,7 @@ class CartController extends Controller
     /**
      * Clear Cart Contents
      *
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function clearCart(): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -204,7 +208,7 @@ class CartController extends Controller
      * Remove Cart Item
      *
      * @param $row_id
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function removeProduct($row_id): RedirectResponse
     {
@@ -228,7 +232,7 @@ class CartController extends Controller
     /**
      * Get Cart Items
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getCartItems(): Collection
     {
@@ -238,8 +242,8 @@ class CartController extends Controller
     /**
      * Remove Sidebar Cart Item
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function removeSidebarProduct(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -254,8 +258,8 @@ class CartController extends Controller
     /**
      * Apply Coupon
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function applyCoupon(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -329,7 +333,7 @@ class CartController extends Controller
     /**
      * Calculate Coupon Discount and Overall Cart Total
      *
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function couponCalculation(): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -360,8 +364,8 @@ class CartController extends Controller
     /**
      * Set the referral session
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function applyReferral(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -392,10 +396,8 @@ class CartController extends Controller
 
         Session::put('referral', [
             'id' => $referrer->id,
-            'name' => 'basic_pack',
-            'code' => $referral_code,
-            'points' => 10, // points
-            'bonus' => 100 // e-wallet
+            'package' => 'basic_pack', // product_type
+            'code' => $referral_code
         ]);
 
         return response([
@@ -414,5 +416,24 @@ class CartController extends Controller
     {
         /* To do: Obtain the referrer_id based on the referral code */
         return Hashids::decode($referral_code);
+    }
+
+    /**
+     * Session Reward Details
+     *
+     * @param $product_id
+     * @param $quantity
+     */
+    public function applyRewards($product_id, $quantity): void
+    {
+        $user_id = Auth::user()->id;
+
+        if (hasReferral($user_id)) {
+            Session::put('point_reward', [
+                'id' => $user_id,
+                'product_id' => $product_id, // product
+                'quantity' => $quantity
+            ]);
+        }
     }
 }

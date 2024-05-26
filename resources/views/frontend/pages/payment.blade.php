@@ -40,20 +40,30 @@
                         <div class="wsus__payment_menu" id="sticky_sidebar">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist"
                                  aria-orientation="vertical">
-                                <button class="nav-link common_btn active" id="v-pills-paypal-tab"
-                                        data-bs-toggle="pill" data-bs-target="#v-pills-paypal"
-                                        type="button" role="tab" aria-controls="v-pills-paypal"
-                                        aria-selected="true">paypal
+                                <button class="nav-link common_btn active" id="v-pills-gcash-tab" data-bs-toggle="pill"
+                                        data-bs-target="#v-pills-gcash" type="button" role="tab"
+                                        aria-controls="v-pills-gcash" aria-selected="false">GCash
+                                </button>
+                                <button class="nav-link common_btn" id="v-pills-paymaya-tab" data-bs-toggle="pill"
+                                        data-bs-target="#v-pills-paymaya" type="button" role="tab"
+                                        aria-controls="v-pills-paymaya" aria-selected="false">Paymaya
                                 </button>
                                 <button class="nav-link common_btn" id="v-pills-cod-tab" data-bs-toggle="pill"
                                         data-bs-target="#v-pills-cod" type="button" role="tab"
                                         aria-controls="v-pills-cod" aria-selected="false">Cash-on-Delivery
+                                </button>
+                                <button class="nav-link common_btn" id="v-pills-paypal-tab"
+                                        data-bs-toggle="pill" data-bs-target="#v-pills-paypal"
+                                        type="button" role="tab" aria-controls="v-pills-paypal"
+                                        aria-selected="true">Paypal
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="col-xl-5 col-lg-5">
                         <div class="tab-content sticky_sidebar" id="v-pills-tabContent">
+                            @include( 'frontend.pages.payment-gateways.gcash' )
+                            @include( 'frontend.pages.payment-gateways.paymaya' )
                             @include( 'frontend.pages.payment-gateways.paypal' )
                             @include( 'frontend.pages.payment-gateways.cod' )
                         </div>

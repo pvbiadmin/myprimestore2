@@ -24,6 +24,7 @@ class ProductFactory extends Factory
             'video_link' => $this->faker->word(),
             'sku' => $this->faker->word(),
             'price' => $this->faker->randomFloat(),
+            'points' => $this->faker->randomFloat(),
             'offer_price' => $this->faker->randomFloat(),
             'offer_start_date' => $this->faker->word(),
             'offer_end_date' => $this->faker->word(),

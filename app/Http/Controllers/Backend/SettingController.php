@@ -23,7 +23,7 @@ class SettingController extends Controller
     /**
      * View Settings Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function index(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -39,8 +39,8 @@ class SettingController extends Controller
     /**
      * Update General Settings
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function updateGeneralSetting(Request $request): RedirectResponse
     {
@@ -64,15 +64,15 @@ class SettingController extends Controller
         GeneralSetting::query()->updateOrCreate(
             ['id' => 1],
             [
-                'site_name' => $request->name_site,
-                'site_layout' => $request->layout_site,
-                'contact_email' => $request->email_contact,
-                'contact_phone' => $request->contact_phone,
-                'contact_address' => $request->contact_address,
-                'map' => $request->map,
-                'currency_name' => $request->name_currency,
-                'currency_icon' => $request->icon_currency,
-                'timezone' => $request->timezone,
+                'site_name' => $request->input('name_site'),
+                'site_layout' => $request->input('layout_site'),
+                'contact_email' => $request->input('email_contact'),
+                'contact_phone' => $request->input('contact_phone'),
+                'contact_address' => $request->input('contact_address'),
+                'map' => $request->input('map'),
+                'currency_name' => $request->input('name_currency'),
+                'currency_icon' => $request->input('icon_currency'),
+                'timezone' => $request->input('timezone'),
             ]
         );
 
@@ -82,8 +82,8 @@ class SettingController extends Controller
     /**
      * Email Configuration Setting
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function emailConfigSettingUpdate(Request $request): RedirectResponse
     {
@@ -118,7 +118,13 @@ class SettingController extends Controller
         ]);
     }
 
-    public function logoSettingUpdate(Request $request)
+    /**
+     * Update Logo Settings
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function logoSettingUpdate(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'logo' => ['image', 'max:3000'],
@@ -136,14 +142,16 @@ class SettingController extends Controller
             ]);
         }
 
-        $logoPath = $this->updateImage($request, 'logo', 'uploads', $request->old_logo);
-        $favicon = $this->updateImage($request, 'favicon', 'uploads', $request->old_favicon);
+        $logoPath = $this->updateImage(
+            $request, 'logo', 'uploads', $request->input('old_logo'));
+        $favicon = $this->updateImage(
+            $request, 'favicon', 'uploads', $request->input('old_favicon'));
 
         LogoSetting::query()->updateOrCreate(
             ['id' => 1],
             [
-                'logo' => (!empty($logoPath)) ? $logoPath : $request->old_logo,
-                'favicon' => (!empty($favicon)) ? $favicon : $request->old_favicon
+                'logo' => (!empty($logoPath)) ? $logoPath : $request->input('old_logo'),
+                'favicon' => (!empty($favicon)) ? $favicon : $request->input('old_favicon')
             ]
         );
 
@@ -156,10 +164,10 @@ class SettingController extends Controller
     /**
      * Pusher settings update
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
-    function pusherSettingUpdate(Request $request): RedirectResponse
+    public function pusherSettingUpdate(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'pusher_app_id' => ['required'],

@@ -24,9 +24,22 @@
                                     <img src="{{ asset($product->thumb_image) }}"
                                          width="100" alt="{{ $product->name }}">
                                 </div>
-                                <div class="form-group">
-                                    <label for="image">Image</label>
-                                    <input type="file" name="image" id="image" class="form-control">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="image">Image</label>
+                                            <input type="file" name="image" id="image" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="points">Points</label>
+                                            <input type="number" step="0.01" name="points" class="form-control"
+                                                   id="points" value="{{ old('points') ?? $product->points }}">
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="name">Name</label>
