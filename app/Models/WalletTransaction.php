@@ -11,7 +11,8 @@ class WalletTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'wallet_id', 'type', 'amount',
+        'wallet_id', 'type', 'amount', 'details',
+
     ];
 
     public function user(): BelongsTo

@@ -150,19 +150,18 @@ class PaymentController extends Controller
      * @param array $details
      * @param string $type
      * @param bool $activated
-     * @return bool
+     * @return void
      * @throws JsonException
      */
-    public function referralEntry($details = [], $type = 'credit', $activated = true): bool
+    public function referralEntry($details = [], $type = 'credit', $activated = true): void
     {
-        $entered = false;
-
         $referral_session = Session::get('referral');
 
         if ($referral_session && isset($referral_session['id'])) {
-            $referrer = User::findOrFail($referral_session['id'])->first();
+            $referral_id = $referral_session['id'];
+            $package = $referral_session['package'];
 
-            $product = Product::where('product_type', $referral_session['package'])->first();
+            $product = Product::where('product_type', $package)->first();
 
             $referralSettings = ReferralSetting::first();
 
@@ -171,18 +170,14 @@ class PaymentController extends Controller
 
             // encode into referral table and activate
             Referral::create([
-                'referrer_id' => $referrer->id,
+                'referrer_id' => $referral_id,
                 'referred_id' => auth()->user()->id,
                 'status' => $activated ? 1 : 0,
             ]);
 
-            $this->addToWallet($referrer, $bonus, $details, $type);
-            $this->addToPoints($referrer, $points, $details, $type);
-
-            $entered = true;
+            $this->addToWallet($referral_id, $bonus, $details, $type);
+            $this->addToPoints($referral_id, $points, $details, $type);
         }
-
-        return $entered;
     }
 
     /**
@@ -190,11 +185,9 @@ class PaymentController extends Controller
      *
      * @throws JsonException
      */
-    public function pointRewards($details = [], $type = 'credit'): bool
+    public function pointRewards($details = [], $type = 'credit'): void
     {
-        $entered = false;
-
-        $user = Auth::user();
+        $user_id = Auth::user()->id;
 
         $point_reward_session = Session::get('point_reward');
 
@@ -204,27 +197,29 @@ class PaymentController extends Controller
             $product = Product::findOrFail($point_reward_session['product_id']);
             $referralSettings = ReferralSetting::first();
 
+//            dd($referralSettings);
+
             $points = $product->points * $point_reward_session['quantity'] * $referralSettings->points / 100;
 
-            $this->addToPoints($user, $points, $details, $type);
+//            dd($points);
 
-            $entered = true;
+            $this->addToPoints($user_id, $points, $details, $type);
         }
-
-        return $entered;
     }
 
     /**
      * Add to user wallet
      *
-     * @param $user
+     * @param $user_id
      * @param $value
      * @param array $details
      * @param string $type
      * @throws JsonException
      */
-    public function addToWallet($user, $value, $details = [], $type = 'credit'): void
+    public function addToWallet($user_id, $value, $details = [], $type = 'credit'): void
     {
+        $user = User::findOrFail($user_id);
+
         // add bonus and points to referrer
         $wallet = $user->wallet;
 
@@ -240,11 +235,12 @@ class PaymentController extends Controller
             'wallet_id' => $wallet->id,
             'type' => $type,
             'amount' => $value,
+            'details' => json_encode($details, JSON_THROW_ON_ERROR)
         ];
 
-        if (!empty($details)) {
-            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
-        }
+//        if ($details !== []) {
+//            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
+//        }
 
         WalletTransaction::create($data);
     }
@@ -252,14 +248,18 @@ class PaymentController extends Controller
     /**
      * Add to user Points
      *
-     * @param $user
+     * @param $user_id
      * @param $value
      * @param array $details
      * @param string $type
      * @throws JsonException
      */
-    public function addToPoints($user, $value, $details = [], $type = 'credit'): void
+    public function addToPoints($user_id, $value, $details = [], $type = 'credit'): void
     {
+        $user = User::findOrFail($user_id);
+
+//        dd($user);
+
         // add to user points
         $points = $user->point;
 
@@ -275,15 +275,21 @@ class PaymentController extends Controller
             'point_id' => $points->id,
             'type' => $type,
             'points' => $value,
+            'details' => json_encode($details, JSON_THROW_ON_ERROR)
         ];
 
-        if (!empty($details)) {
-            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
-        }
+//        dd($data);
+
+//        if (!empty($details)) {
+//            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
+//        }
 
         PointTransaction::create($data);
     }
 
+    /**
+     * Update coupon
+     */
     public function updateCoupon(): void
     {
         $coupon_session = Session::get('coupon');
@@ -376,6 +382,8 @@ class PaymentController extends Controller
         Session::forget('shipping_address');
         Session::forget('shipping_rule');
         Session::forget('coupon');
+        Session::forget('point_reward');
+        Session::forget('referral');
     }
 
     /**
@@ -552,20 +560,34 @@ class PaymentController extends Controller
             if ($response && isset($response['status'], $response['id']) && $response['status'] === 'COMPLETED') {
                 $paypal_setting = PaypalSetting::query()->firstOrFail();
 
-                $order = $this->storeOrder(
-                    'paypal',
-                    1,
-                    $response['id'],
-                    payableTotal() * $paypal_setting->currency_rate,
-                    $paypal_setting->currency_name
-                );
+                $payableAmount = payableTotal() * $paypal_setting->currency_rate;
 
-                $this->referralEntry(['order_id' => $order->id]);
-                $this->pointRewards(['order_id' => $order->id]);
+                if ($payableAmount) {
+                    $order = $this->storeOrder(
+                        'paypal',
+                        1,
+                        $response['id'],
+                        payableTotal() * $paypal_setting->currency_rate,
+                        $paypal_setting->currency_name
+                    );
 
-                $this->clearSession();
+                    $flag = false;
 
-                return redirect()->route('user.payment.success');
+                    if (!$flag) {
+                        $this->referralEntry(['order_id' => $order->id]);
+                        $this->pointRewards(['order_id' => $order->id]);
+
+                        $flag = true;
+                    }
+
+                    if ($flag) {
+                        $this->clearSession();
+                    }
+
+                    return redirect()->route('user.payment.success');
+                }
+
+                return redirect()->route('user.paypal.cancel');
             }
         } catch (Throwable $exception) {
             // Log the exception or handle it appropriately
@@ -609,20 +631,33 @@ class PaymentController extends Controller
         // amount calculation
         $payableAmount = round(payableTotal(), 2);
 
-        $order = $this->storeOrder(
-            'COD',
-            0,
-            Str::random(10),
-            $payableAmount,
-            $setting->currency_name
-        );
+        if ($payableAmount) {
+            $order = $this->storeOrder(
+                'COD',
+                0,
+                Str::random(10),
+                $payableAmount,
+                $setting->currency_name
+            );
 
-        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
-        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+            $flag = false;
 
-        $this->clearSession();
+            if (!$flag) {
+                $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+                $this->pointRewards(['order_id' => $order->id], 'pending_credit');
 
-        return redirect()->route('user.payment.cod');
+                $flag = true;
+            }
+
+            if ($flag) {
+                $this->clearSession();
+            }
+
+            return redirect()->route('user.payment.cod');
+        }
+
+        return redirect()->route('user.payment')->with([
+            'message' => 'Something went wrong, please try again.', 'alert-type' => 'error']);
     }
 
     /**
@@ -643,23 +678,49 @@ class PaymentController extends Controller
         // amount calculation
         $payableAmount = round(payableTotal(), 2);
 
-        $order = $this->storeOrder(
-            'GCASH',
-            0,
-            Str::random(10),
-            $payableAmount,
-            $setting->currency_name
-        );
+//        dd($payableAmount);
 
-        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
-        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+        if ($payableAmount > 0) {
 
-        $this->clearSession();
+//            dd('hehehe');
 
-        return redirect()->route('user.payment.gcash', [
-            'order_id' => $order->id,
-            'payable' => $payableAmount
-        ]);
+            $order = $this->storeOrder(
+                'GCASH',
+                0,
+                Str::random(10),
+                $payableAmount,
+                $setting->currency_name
+            );
+
+//            dd($order);
+
+            $flag = false;
+
+            if (!$flag) {
+//                dd($flag);
+
+                $details = ['order_id' => $order->id];
+
+                $this->referralEntry($details, 'pending_credit', false);
+                $this->pointRewards($details, 'pending_credit');
+
+                $flag = true;
+            }
+
+            if ($flag) {
+                $this->clearSession();
+            }
+
+//            dd($flag);
+
+            return redirect()->route('user.payment.gcash', [
+                'order_id' => $order->id,
+                'payable' => $payableAmount
+            ]);
+        }
+
+        return redirect()->route('user.payment')->with([
+            'message' => 'Something went wrong, please try again.', 'alert-type' => 'error']);
     }
 
     /**
@@ -680,22 +741,35 @@ class PaymentController extends Controller
         // amount calculation
         $payableAmount = round(payableTotal(), 2);
 
-        $order = $this->storeOrder(
-            'PAYMAYA',
-            0,
-            Str::random(10),
-            $payableAmount,
-            $setting->currency_name
-        );
+        if ($payableAmount) {
+            $order = $this->storeOrder(
+                'PAYMAYA',
+                0,
+                Str::random(10),
+                $payableAmount,
+                $setting->currency_name
+            );
 
-        $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
-        $this->pointRewards(['order_id' => $order->id], 'pending_credit');
+            $flag = false;
 
-        $this->clearSession();
+            if (!$flag) {
+                $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+                $this->pointRewards(['order_id' => $order->id], 'pending_credit');
 
-        return redirect()->route('user.payment.paymaya', [
-            'order_id' => $order->id,
-            'payable' => $payableAmount
-        ]);
+                $flag = true;
+            }
+
+            if ($flag) {
+                $this->clearSession();
+            }
+
+            return redirect()->route('user.payment.paymaya', [
+                'order_id' => $order->id,
+                'payable' => $payableAmount
+            ]);
+        }
+
+        return redirect()->route('user.payment')->with([
+            'message' => 'Something went wrong, please try again.', 'alert-type' => 'error']);
     }
 }

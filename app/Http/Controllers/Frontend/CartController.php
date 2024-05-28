@@ -8,7 +8,6 @@ use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariantOption;
 use App\Models\Referral;
-use App\Models\User;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
@@ -379,11 +378,13 @@ class CartController extends Controller
         }
 
         $referrer_id = $this->decodeReferral($referral_code);
-        $referrer = User::findOrFail($referrer_id)->first();
+//        $referrer = User::findOrFail($referrer_id)->first();
+
+//        dd($referrer_id);
 
         // Check if the referral pair exists in the referrals table
         $referralExists = Referral::query()
-            ->where('referrer_id', $referrer->id)
+            ->where('referrer_id', $referrer_id)
             ->where('referred_id', Auth::id()) // Assuming you are using Laravel's authentication
             ->exists();
 
@@ -395,7 +396,7 @@ class CartController extends Controller
         }
 
         Session::put('referral', [
-            'id' => $referrer->id,
+            'id' => $referrer_id,
             'package' => 'basic_pack', // product_type
             'code' => $referral_code
         ]);
@@ -410,12 +411,12 @@ class CartController extends Controller
      * Retrieve the user_id from the hash
      *
      * @param $referral_code
-     * @return array
+     * @return mixed
      */
-    public function decodeReferral($referral_code): array
+    public function decodeReferral($referral_code)
     {
         /* To do: Obtain the referrer_id based on the referral code */
-        return Hashids::decode($referral_code);
+        return Hashids::decode($referral_code)[0];
     }
 
     /**

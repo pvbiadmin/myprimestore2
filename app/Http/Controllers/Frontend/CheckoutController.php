@@ -22,7 +22,7 @@ class CheckoutController extends Controller
     /**
      * View Checkout Page
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application|RedirectResponse
      */
     public function index(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application|RedirectResponse
     {
@@ -37,8 +37,10 @@ class CheckoutController extends Controller
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Add User Address
+     *
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function createAddress(Request $request): RedirectResponse
     {
@@ -68,14 +70,14 @@ class CheckoutController extends Controller
         $address = new UserAddress();
 
         $address->user_id = Auth::user()->id;
-        $address->name = $request->name;
-        $address->email = $request->email;
-        $address->phone = $request->phone;
-        $address->country = $request->country;
-        $address->state = $request->state;
-        $address->city = $request->city;
-        $address->zip = $request->zip;
-        $address->address = $request->address;
+        $address->name = $request->input('name');
+        $address->email = $request->input('email');
+        $address->phone = $request->input('phone');
+        $address->country = $request->input('country');
+        $address->state = $request->input('state');
+        $address->city = $request->input('city');
+        $address->zip = $request->input('zip');
+        $address->address = $request->input('address');
 
         $address->save();
 
@@ -85,8 +87,8 @@ class CheckoutController extends Controller
     /**
      * Setting Sessions for Shipping Rules and Address
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|RedirectResponse|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function checkoutFormSubmit(Request $request): Application|Response|RedirectResponse|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -102,7 +104,7 @@ class CheckoutController extends Controller
             return redirect()->back()->with(['message' => $error, 'alert-type' => 'error']);
         }
 
-        $shipping_rule = ShippingRule::query()->findOrFail($request->shipping_method_id);
+        $shipping_rule = ShippingRule::query()->findOrFail($request->input('shipping_method_id'));
 
         if ($shipping_rule) {
             Session::put('shipping_rule', [
@@ -115,10 +117,10 @@ class CheckoutController extends Controller
             return response(['status' => 'error']);
         }
 
-        $address = UserAddress::query()->findOrFail($request->shipping_address_id)->toArray();
+        $address = UserAddress::query()->findOrFail($request->input('shipping_address_id'));
 
         if ($address) {
-            Session::put('shipping_address', $address);
+            Session::put('shipping_address', $address->toArray());
         } else {
             return response(['status' => 'error']);
         }

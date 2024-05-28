@@ -1,5 +1,7 @@
 @extends( 'frontend.dashboard.layouts.master' )
 
+{{--@dump(Auth::user()->id)--}}
+
 @section( 'title' )
     {{ $settings->site_name }} || User Dashboard
 @endsection

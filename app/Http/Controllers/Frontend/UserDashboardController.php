@@ -9,16 +9,17 @@ use App\Models\Wishlist;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserDashboardController extends Controller
 {
     /**
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function index(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
+//        dd(Auth::user()->id);
+
         $total_orders = Order::query()->where('user_id', Auth::user()->id)->count();
         $pending_orders = Order::query()->where('user_id', Auth::user()->id)
             ->where('order_status', 'pending')->count();

@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\UserAddress
@@ -18,24 +21,24 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $city
  * @property string $zip
  * @property string $address
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress query()
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereCity($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereCountry($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress wherePhone($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereState($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserAddress whereZip($value)
- * @mixin \Eloquent
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @method static Builder|UserAddress newModelQuery()
+ * @method static Builder|UserAddress newQuery()
+ * @method static Builder|UserAddress query()
+ * @method static Builder|UserAddress whereAddress($value)
+ * @method static Builder|UserAddress whereCity($value)
+ * @method static Builder|UserAddress whereCountry($value)
+ * @method static Builder|UserAddress whereCreatedAt($value)
+ * @method static Builder|UserAddress whereEmail($value)
+ * @method static Builder|UserAddress whereId($value)
+ * @method static Builder|UserAddress whereName($value)
+ * @method static Builder|UserAddress wherePhone($value)
+ * @method static Builder|UserAddress whereState($value)
+ * @method static Builder|UserAddress whereUpdatedAt($value)
+ * @method static Builder|UserAddress whereUserId($value)
+ * @method static Builder|UserAddress whereZip($value)
+ * @mixin Eloquent
  */
 class UserAddress extends Model
 {

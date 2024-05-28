@@ -139,7 +139,7 @@
                                     number_format(couponDiscount(), 2) }}</span></p>
                             <p class="total"><span>total:</span> <span id="cart-total">{{
                                 $settings->currency_icon . number_format(cartTotal(), 2) }}</span></p>
-                            @if ( $cart_package && str($cart_package[0]->options->is_package) === '1' )
+                            @if ( $cart_package && $cart_package[0]->options->is_package === '1' )
                                 <form id="referral_form">
                                     <input type="text" name="referral" value="{{ session()->has('referral')
                                         ? session('referral')['code'] : '' }}"
@@ -147,13 +147,19 @@
                                     <button type="submit" class="common_btn">apply</button>
                                 </form>
                             @endif
-                            <form id="coupon_form">
-                                <input type="text" name="coupon" value="{{ session()->has('coupon')
+                            @if ( count(\App\Models\Coupon::all()) > 0
+                                && count(\App\Models\Coupon::query()->where('status', 1)
+                                    ->where('quantity', '>', 0)->get()) > 0
+                                    && count(\App\Models\Coupon::query()
+                                        ->where('start_date', '>', date('Y-m-d'))->get()) )
+                                <form id="coupon_form">
+                                    <input type="text" name="coupon" value="{{ session()->has('coupon')
                                     ? session('coupon')['code'] : '' }}"
-                                       placeholder="{{ session()->has('coupon')
+                                           placeholder="{{ session()->has('coupon')
                                         ? session('coupon')['code'] : 'Coupon Code' }}" aria-label="coupon">
-                                <button type="submit" class="common_btn">apply</button>
-                            </form>
+                                    <button type="submit" class="common_btn">apply</button>
+                                </form>
+                            @endif
                             <a class="common_btn mt-4 w-100 text-center"
                                href="{{ route('user.checkout') }}">checkout</a>
                             <a class="common_btn mt-1 w-100 text-center"
