@@ -191,7 +191,7 @@ class OrderController extends Controller
         $order = Order::query()->findOrFail($orderId);
 
         // referral wallet and points computation
-        $this->addReferralBonus($orderId);
+        AdminReferralController::addReferralBonus($orderId);
 
         // compute unilevel
         $this->addUnilevelBonus($orderId);
@@ -204,82 +204,6 @@ class OrderController extends Controller
             'message' => 'Payment Status Updated',
             'payment_status' => $status
         ]);
-    }
-
-    /**
-     * Add Referral Bonus
-     *
-     * @param $orderId
-     */
-    public function addReferralBonus($orderId): void
-    {
-        $order = Order::query()->findOrFail($orderId);
-        $orderProduct = OrderProduct::where('order_id', $order->id)->first();
-        $product = $orderProduct->product;
-        $product_type = $product->product_type;
-
-        if ($product_type === 'basic_pack') {
-            $user = User::findOrFail($order->user_id);
-            $referral = Referral::where('referred_id', $user->id)->first();
-            $referrer = User::findOrFail($referral->referrer_id);
-
-            $referrer_point = $referrer->point;
-
-            // update points transactions
-            $referrer_point_transactions = PointTransaction::where([
-                'point_id' => $referrer_point->id,
-                'type' => 'pending_credit',
-                'details' => '{"order_id":' . $order->id . '}'
-            ])->first();
-
-            if ($referrer_point_transactions !== null) {
-                $point_rewards = $referrer_point_transactions->points;
-
-                // update referrer points
-                $referrer_point->balance += $point_rewards;
-
-                if ($referrer_point->save()) {
-                    $referrer_point_transactions->type = 'credit';
-                    $referrer_point_transactions->save();
-                }
-
-                // update referral status
-                if ($referral->status === 0) {
-                    $referral->status = 1;
-                    $referral->save();
-                }
-
-                $referrer_wallet = $referrer->wallet;
-
-                // update wallet
-                $referrer_wallet_transactions = WalletTransaction::where([
-                    'wallet_id' => $referrer_wallet->id,
-                    'type' => 'pending_credit',
-                    'details' => '{"order_id":' . $order->id . '}'
-                ])->first();
-
-                if ($referrer_wallet_transactions !== null) {
-                    $referral_bonus = $referrer_wallet_transactions->amount;
-
-                    // update referrer wallet
-                    $referrer_wallet->balance += $referral_bonus;
-
-                    if ($referrer_wallet->save()) {
-                        $referrer_wallet_transactions->type = 'credit';
-                        $referrer_wallet_transactions->save();
-
-                        $commission = $referrer->commission;
-
-                        if (!$commission) {
-                            $commission = $referrer->commission()->create(['referral' => 0, 'unilevel' => 0]);
-                        }
-
-                        $commission->referral += $referral_bonus;
-                        $commission->save();
-                    }
-                }
-            }
-        }
     }
 
     /**
