@@ -4,6 +4,7 @@
 use App\Http\Controllers\Backend\AboutController;
 use App\Http\Controllers\Backend\AdminListController;
 use App\Http\Controllers\Backend\AdminReferralController;
+use App\Http\Controllers\Backend\AdminUnilevelController;
 use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\BlogCommentController;
 use App\Http\Controllers\Backend\BlogController;
@@ -233,7 +234,7 @@ Route::controller(MessageController::class)->group(function () {
     Route::post('send-message', 'sendMessage')->name('send-message');
 });
 
-/** Referral code route */
+/** Referral settings route */
 Route::controller(AdminReferralController::class)->group(function () {
     Route::as('referral.')->group(function () {
         Route::get('referral', 'index')->name('index');
@@ -243,6 +244,15 @@ Route::controller(AdminReferralController::class)->group(function () {
     Route::as('referral-code.')->group(function () {
         Route::get('generate', 'generateCode')->name('generate');
         Route::post('send', 'sendCode')->name('send');
+    });
+});
+
+/** Unilevel settings route */
+Route::controller(AdminUnilevelController::class)->group(function () {
+    Route::as('unilevel.')->group(function () {
+        Route::get('unilevel', 'index')->name('index');
+        Route::put('unilevel/settings/update/{id}', 'updateUnilevelSettings')
+            ->name('settings.update');
     });
 });
 

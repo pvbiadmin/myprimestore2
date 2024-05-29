@@ -27,7 +27,7 @@ class AdminReferralController extends Controller
     use ReferralTrait;
 
     /**
-     * View Referral Code Generation Page
+     * View Referral Page
      *
      * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
@@ -129,13 +129,6 @@ class AdminReferralController extends Controller
 
             $referrer_point = $referrer->point;
 
-            // update points transactions
-//            $referrer_point_transactions = PointTransaction::where([
-//                'point_id' => $referrer_point->id,
-//                'type' => 'pending_credit',
-//                'details' => '{"order_id":' . $order->id . '}'
-//            ])->first();
-
             $referrer_point_transactions = self::getPointTransaction(
                 $referrer_point->id,
                 'pending_credit',
@@ -160,13 +153,6 @@ class AdminReferralController extends Controller
                 }
 
                 $referrer_wallet = $referrer->wallet;
-
-                // update wallet
-//                $referrer_wallet_transactions = WalletTransaction::where([
-//                    'wallet_id' => $referrer_wallet->id,
-//                    'type' => 'pending_credit',
-//                    'details' => '{"order_id":' . $order->id . '}'
-//                ])->first();
 
                 $referrer_wallet_transactions = self::getWalletTransaction(
                     $referrer_wallet->id,

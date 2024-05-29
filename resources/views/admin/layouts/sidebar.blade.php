@@ -217,13 +217,18 @@
             </li>
 
             <li class="dropdown {{ setActive([
-                    'admin.referral.index'
+                    'admin.referral.index',
+                    'admin.unilevel.index'
                     ]) }}">
                 <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i
                         class="fas fa-users-cog"></i> <span>Commissions</span></a>
                 <ul class="dropdown-menu">
                     <li class="{{ setActive(['admin.referral.index']) }}">
                         <a class="nav-link" href="{{ route('admin.referral.index') }}">Referral</a></li>
+                </ul>
+                <ul class="dropdown-menu">
+                    <li class="{{ setActive(['admin.unilevel.index']) }}">
+                        <a class="nav-link" href="{{ route('admin.unilevel.index') }}">Unilevel</a></li>
                 </ul>
             </li>
 
