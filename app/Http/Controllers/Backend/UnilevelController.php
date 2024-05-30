@@ -239,9 +239,9 @@ class UnilevelController extends Controller
      * @param $point_id
      * @param $type
      * @param $details
-     * @return PointTransaction
+     * @return PointTransaction|null
      */
-    protected static function getPointTransaction($point_id, $type, $details): PointTransaction
+    protected static function getPointTransaction($point_id, $type, $details): ?PointTransaction
     {
         return PointTransaction::where([
             'point_id' => $point_id,
