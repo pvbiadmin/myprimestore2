@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\DataTables\ReferralSettingDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -12,9 +13,9 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Traits\ReferralTrait;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,20 +23,155 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Vinkla\Hashids\Facades\Hashids;
 
-class AdminReferralController extends Controller
+class ReferralController extends Controller
 {
     use ReferralTrait;
 
     /**
-     * View Referral Page
+     * Display a listing of the resource.
      *
+     * @param ReferralSettingDataTable $dataTable
+     * @return mixed
+     */
+    public function index(ReferralSettingDataTable $dataTable)
+    {
+        return $dataTable->render('admin.commissions.direct-referral.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+
+    /**
      * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
-    public function index()
+    public function create()
     {
-        $referralSettings = ReferralSetting::first();
+        return view('admin.commissions.direct-referral.create');
+    }
 
-        return view('admin.commissions.referral.index', compact('referralSettings'));
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $this->validateRequest($request);
+
+        $referralSetting = new ReferralSetting();
+
+        $referralSetting->package = $request->input('package');
+        $referralSetting->bonus = $request->input('bonus');
+        $referralSetting->points = $request->input('points');
+        $referralSetting->status = $request->input('status');
+
+        $referralSetting->save();
+
+        return redirect()->route('admin.referral.index')
+            ->with(['message' => 'Settings Added Successfully']);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param string $id
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
+     */
+    public function edit(string $id)
+    {
+        $referralSetting = ReferralSetting::findOrFail($id);
+
+        return view('admin.commissions.direct-referral.edit', compact('referralSetting'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param Request $request
+     * @param string $id
+     * @return RedirectResponse
+     */
+    public function update(Request $request, string $id): RedirectResponse
+    {
+        $this->validateRequest($request);
+
+        $referralSetting = ReferralSetting::findOrFail($id);
+
+        $referralSetting->package = $request->input('package');
+        $referralSetting->bonus = $request->input('bonus');
+        $referralSetting->points = $request->input('points');
+        $referralSetting->status = $request->input('status');
+
+        $referralSetting->save();
+
+        return redirect()->route('admin.referral.index')
+            ->with(['message' => 'Settings Updated Successfully']);
+    }
+
+    /**
+     * @param Request $request
+     */
+    protected function validateRequest(Request $request): void
+    {
+        $validator = Validator::make($request->all(), [
+            'package' => ['required'],
+            'bonus' => ['required'],
+            'points' => ['required'],
+            'status' => ['required'],
+        ]);
+
+        try {
+            $validator->validate();
+        } catch (ValidationException $e) {
+            $error = $e->validator->errors()->first();
+            redirect()->back()->withInput()
+                ->with(['message' => $error, 'alert-type' => 'error'])
+                ->throwResponse();
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param string $id
+     * @return Application|ResponseFactory|\Illuminate\Foundation\Application|Response
+     */
+    public function destroy(string $id)
+    {
+        $referralSetting = ReferralSetting::findOrFail($id);
+
+        $referralSetting->delete();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Setting Deleted Successfully.'
+        ]);
+    }
+
+    /**
+     * Handles Flash Sale Status Update
+     *
+     * @param Request $request
+     * @return Application|Response|ResponseFactory
+     */
+    public function changeStatus(Request $request)
+    {
+        $referralSetting = ReferralSetting::findOrFail($request->input('idToggle'));
+
+        $referralSetting->status = ($request->input('isChecked') === 'true' ? 1 : 0);
+        $referralSetting->save();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Status Updated.'
+        ]);
+    }
+
+    public function viewCode()
+    {
+        return view('admin.commissions.referral-code.index');
     }
 
     /**
@@ -69,45 +205,6 @@ class AdminReferralController extends Controller
     public function sendCode(Request $request): ?RedirectResponse
     {
         return $this->sendReferralCode($request);
-    }
-
-    /**
-     * Update Referral Settings
-     *
-     * @param Request $request
-     * @param string $id
-     * @return RedirectResponse
-     */
-    public function updateReferralSettings(Request $request, string $id): RedirectResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'bonus' => ['required'],
-            'points' => ['required'],
-        ]);
-
-        try {
-            $validator->validate();
-        } catch (ValidationException $e) {
-            $error = $e->validator->errors()->first();
-            return redirect()->back()->with([
-                'anchor' => 'list-settings-list',
-                'message' => $error,
-                'alert-type' => 'error'
-            ]);
-        }
-
-        ReferralSetting::updateOrCreate(
-            ['id' => $id],
-            [
-                'bonus' => $request->input('bonus'),
-                'points' => $request->input('points'),
-            ]
-        );
-
-        return redirect()->back()->with([
-            'anchor' => 'list-settings-list',
-            'message' => 'Updated Successfully!'
-        ]);
     }
 
     /**
@@ -217,4 +314,5 @@ class AdminReferralController extends Controller
             'details' => $details
         ])->first();
     }
+
 }

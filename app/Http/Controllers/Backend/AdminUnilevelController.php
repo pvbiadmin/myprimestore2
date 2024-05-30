@@ -88,12 +88,6 @@ class AdminUnilevelController extends Controller
             $user_point = $user->point()->create(['balance' => 0]);
         }
 
-//        $user_point_transactions = PointTransaction::where([
-//            'point_id' => $user_point->id,
-//            'type' => 'pending_credit',
-//            'details' => '{"order_id":' . $order->id . '}'
-//        ])->first();
-
         $user_point_transactions = self::getPointTransaction(
             $user_point->id,
             'pending_credit',

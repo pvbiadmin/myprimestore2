@@ -3,7 +3,6 @@
 
 use App\Http\Controllers\Backend\AboutController;
 use App\Http\Controllers\Backend\AdminListController;
-use App\Http\Controllers\Backend\AdminReferralController;
 use App\Http\Controllers\Backend\AdminUnilevelController;
 use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\BlogCommentController;
@@ -36,6 +35,7 @@ use App\Http\Controllers\Backend\ProductImageGalleryController;
 use App\Http\Controllers\Backend\ProductVariantController;
 use App\Http\Controllers\Backend\ProductVariantOptionController;
 use App\Http\Controllers\Backend\ProfileController;
+use App\Http\Controllers\Backend\ReferralController;
 use App\Http\Controllers\Backend\SellerProductController;
 use App\Http\Controllers\Backend\SettingController;
 use App\Http\Controllers\Backend\ShippingRuleController;
@@ -235,17 +235,36 @@ Route::controller(MessageController::class)->group(function () {
 });
 
 /** Referral settings route */
-Route::controller(AdminReferralController::class)->group(function () {
+//Route::controller(AdminReferralController::class)->group(function () {
+//    Route::as('referral.')->group(function () {
+//        Route::get('referral', 'index')->name('index');
+//        Route::put('referral/settings/show/{id}', 'showReferralSettings')
+//            ->name('settings.show');
+//        Route::put('referral/settings/update/{id}', 'updateReferralSettings')
+//            ->name('settings.update');
+//        Route::put('referral/settings/destroy/{id}', 'deleteReferralSettings')
+//            ->name('settings.destroy');
+//    });
+//    Route::as('referral-code.')->group(function () {
+//        Route::get('generate', 'generateCode')->name('generate');
+//        Route::post('send', 'sendCode')->name('send');
+//    });
+//});
+
+/**
+ * Referral Settings Routes
+ */
+Route::controller(ReferralController::class)->group(function () {
     Route::as('referral.')->group(function () {
-        Route::get('referral', 'index')->name('index');
-        Route::put('referral/settings/update/{id}', 'updateReferralSettings')
-            ->name('settings.update');
+        Route::put('referral/change-status', 'changeStatus')->name('change-status');
     });
     Route::as('referral-code.')->group(function () {
-        Route::get('generate', 'generateCode')->name('generate');
-        Route::post('send', 'sendCode')->name('send');
+        Route::get('referral-code/view', 'viewCode')->name('view');
+        Route::get('referral-code/generate', 'generateCode')->name('generate');
+        Route::post('referral-code/send', 'sendCode')->name('send');
     });
 });
+Route::resource('referral', ReferralController::class);
 
 /** Unilevel settings route */
 Route::controller(AdminUnilevelController::class)->group(function () {

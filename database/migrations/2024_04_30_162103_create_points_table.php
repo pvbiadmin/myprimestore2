@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('points', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
-            $table->decimal('balance', 10)->default(0);
+            $table->decimal('balance', 10, 5)->default(0);
             $table->timestamps();
 
             $table->foreign('user_id')

@@ -20,7 +20,7 @@ class FlashSaleController extends Controller
     /**
      * View Flash Sales
      *
-     * @param \App\DataTables\FlashSaleItemDataTable $dataTable
+     * @param FlashSaleItemDataTable $dataTable
      * @return mixed
      */
     public function index(FlashSaleItemDataTable $dataTable): mixed
@@ -39,8 +39,8 @@ class FlashSaleController extends Controller
     /**
      * Update Flash Sale End Date
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function update(Request $request): RedirectResponse
     {
@@ -57,7 +57,7 @@ class FlashSaleController extends Controller
 
         FlashSale::query()->updateOrCreate(
             ['id' => 1],
-            ['end_date' => $request->end_date]
+            ['end_date' => $request->input('end_date')]
         );
 
         return redirect()->back()->with(['message' => 'Flash Sale End Date Updated']);
@@ -66,8 +66,8 @@ class FlashSaleController extends Controller
     /**
      * Adds Product to Flash Sale
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function addProduct(Request $request): RedirectResponse
     {
@@ -89,9 +89,9 @@ class FlashSaleController extends Controller
 
         $flash_sale_item = new FlashSaleItem();
 
-        $flash_sale_item->product_id = $request->product;
-        $flash_sale_item->show_at_home = $request->show_at_home;
-        $flash_sale_item->status = $request->status;
+        $flash_sale_item->product_id = $request->input('product');
+        $flash_sale_item->show_at_home = $request->input('show_at_home');
+        $flash_sale_item->status = $request->input('status');
 
         $flash_sale_item->save();
 
@@ -102,7 +102,7 @@ class FlashSaleController extends Controller
      * Remove the specified resource from storage.
      *
      * @param string $id
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function destroy(string $id): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -119,14 +119,14 @@ class FlashSaleController extends Controller
     /**
      * Handles Flash Sale Status Update
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = FlashSaleItem::query()->findOrFail($request->idToggle);
+        $slider = FlashSaleItem::query()->findOrFail($request->input('idToggle'));
 
-        $slider->status = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         return response([
@@ -138,14 +138,14 @@ class FlashSaleController extends Controller
     /**
      * Handles Flash Sale `Show-at-Home` Update
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function changeShowAtHome(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = FlashSaleItem::query()->findOrFail($request->idToggle);
+        $slider = FlashSaleItem::query()->findOrFail($request->input('idToggle'));
 
-        $slider->show_at_home = ($request->isChecked == 'true' ? 1 : 0);
+        $slider->show_at_home = ($request->input('isChecked') === 'true' ? 1 : 0);
         $slider->save();
 
         return response([

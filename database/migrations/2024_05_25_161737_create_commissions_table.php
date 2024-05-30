@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('commissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
-            $table->decimal('referral', 10)->default(0);
-            $table->decimal('unilevel', 10)->default(0);
+            $table->decimal('referral', 10, 5)->default(0);
+            $table->decimal('unilevel', 10, 5)->default(0);
             $table->timestamps();
         });
     }

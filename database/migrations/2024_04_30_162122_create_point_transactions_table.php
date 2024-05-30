@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('point_id');
             $table->string('type'); // credit or debit
-            $table->decimal('points', 10);
+            $table->decimal('points', 10, 5);
             $table->timestamps();
 
 //            $table->foreign('point_id')

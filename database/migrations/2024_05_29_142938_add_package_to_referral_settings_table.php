@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('referral_settings', function (Blueprint $table) {
-            $table->id();
-            $table->double('bonus');
-            $table->double('points');
-            $table->boolean('status')->default(1);
-            $table->timestamps();
+        Schema::table('referral_settings', function (Blueprint $table) {
+            $table->string('package')->after('id');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('referral_settings');
+        Schema::table('referral_settings', function (Blueprint $table) {
+            $table->dropColumn('package');
+        });
     }
 };

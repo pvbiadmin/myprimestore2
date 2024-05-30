@@ -10,7 +10,9 @@ class ReferralSetting extends Model
     use HasFactory;
 
     protected $fillable = [
+        'package',
         'bonus',
         'points',
+        'status'
     ];
 }
