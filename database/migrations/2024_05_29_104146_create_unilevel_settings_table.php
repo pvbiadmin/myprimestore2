@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('unilevel_settings', function (Blueprint $table) {
             $table->id();
+            $table->string('package');
             $table->double('bonus');
+            $table->boolean('status')->default(1);
             $table->timestamps();
         });
     }

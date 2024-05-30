@@ -10,6 +10,8 @@ class UnilevelSetting extends Model
     use HasFactory;
 
     protected $fillable = [
+        'package',
         'bonus',
+        'status',
     ];
 }

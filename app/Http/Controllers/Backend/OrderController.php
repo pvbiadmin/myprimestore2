@@ -190,7 +190,7 @@ class OrderController extends Controller
         ReferralController::addReferralBonus($orderId);
 
         // compute unilevel
-        AdminUnilevelController::addUnilevelBonus($orderId);
+        UnilevelController::addUnilevelBonus($orderId);
 
         $order->payment_status = $status;
         $order->save();

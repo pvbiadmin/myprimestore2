@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\DataTables\UnilevelSettingDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PointTransaction;
@@ -10,63 +11,151 @@ use App\Models\UnilevelSetting;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use JsonException;
 
-class AdminUnilevelController extends Controller
+class UnilevelController extends Controller
 {
     /**
-     * View Unilevel Page
+     * Display a listing of the resource.
      *
-     * @return Application|Factory|View|\Illuminate\Foundation\Application
+     * @param UnilevelSettingDataTable $dataTable
+     * @return mixed
      */
-    public function index()
+    public function index(UnilevelSettingDataTable $dataTable)
     {
-        $unilevelSettings = UnilevelSetting::first();
-
-        return view('admin.commissions.unilevel.index', compact('unilevelSettings'));
+        return $dataTable->render('admin.commissions.unilevel.index');
     }
 
     /**
-     * Update Unilevel Settings
+     * Show the form for creating a new resource.
+     *
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
+     */
+    public function create()
+    {
+        return view('admin.commissions.unilevel.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $this->validateRequest($request);
+
+        $unilevelSetting = new UnilevelSetting();
+
+        $unilevelSetting->package = $request->input('package');
+        $unilevelSetting->bonus = $request->input('bonus');
+        $unilevelSetting->status = $request->input('status');
+
+        $unilevelSetting->save();
+
+        return redirect()->route('admin.unilevel.index')
+            ->with(['message' => 'Settings Added Successfully']);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $unilevelSetting = UnilevelSetting::findOrFail($id);
+
+        return view('admin.commissions.unilevel.edit', compact('unilevelSetting'));
+    }
+
+    /**
+     * Update the specified resource in storage.
      *
      * @param Request $request
      * @param string $id
      * @return RedirectResponse
      */
-    public function updateUnilevelSettings(Request $request, string $id): RedirectResponse
+    public function update(Request $request, string $id): RedirectResponse
+    {
+        $this->validateRequest($request);
+
+        $referralSetting = UnilevelSetting::findOrFail($id);
+
+        $referralSetting->package = $request->input('package');
+        $referralSetting->bonus = $request->input('bonus');
+        $referralSetting->status = $request->input('status');
+
+        $referralSetting->save();
+
+        return redirect()->route('admin.unilevel.index')
+            ->with(['message' => 'Settings Updated Successfully']);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    /**
+     * @param string $id
+     * @return Application|ResponseFactory|\Illuminate\Foundation\Application|Response
+     */
+    public function destroy(string $id)
+    {
+        $referralSetting = UnilevelSetting::findOrFail($id);
+
+        $referralSetting->delete();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Setting Deleted Successfully.'
+        ]);
+    }
+
+    /**
+     * Handles Flash Sale Status Update
+     *
+     * @param Request $request
+     * @return Application|Response|ResponseFactory
+     */
+    public function changeStatus(Request $request)
+    {
+        $referralSetting = UnilevelSetting::findOrFail($request->input('idToggle'));
+
+        $referralSetting->status = ($request->input('isChecked') === 'true' ? 1 : 0);
+        $referralSetting->save();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Status Updated.'
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    protected function validateRequest(Request $request): void
     {
         $validator = Validator::make($request->all(), [
+            'package' => ['required'],
             'bonus' => ['required'],
+            'status' => ['required'],
         ]);
 
         try {
             $validator->validate();
         } catch (ValidationException $e) {
             $error = $e->validator->errors()->first();
-            return redirect()->back()->with([
-                'anchor' => 'list-settings-list',
-                'message' => $error,
-                'alert-type' => 'error'
-            ]);
+            redirect()->back()->withInput()
+                ->with(['message' => $error, 'alert-type' => 'error'])
+                ->throwResponse();
         }
-
-        UnilevelSetting::updateOrCreate(
-            ['id' => $id],
-            [
-                'bonus' => $request->input('bonus'),
-            ]
-        );
-
-        return redirect()->back()->with([
-            'anchor' => 'list-settings-list',
-            'message' => 'Updated Successfully!'
-        ]);
     }
 
     /**

@@ -3,7 +3,6 @@
 
 use App\Http\Controllers\Backend\AboutController;
 use App\Http\Controllers\Backend\AdminListController;
-use App\Http\Controllers\Backend\AdminUnilevelController;
 use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\BlogCommentController;
 use App\Http\Controllers\Backend\BlogController;
@@ -44,6 +43,7 @@ use App\Http\Controllers\Backend\SubcategoryController;
 use App\Http\Controllers\Backend\SubscribersController;
 use App\Http\Controllers\Backend\TermsAndConditionController;
 use App\Http\Controllers\Backend\TransactionController;
+use App\Http\Controllers\Backend\UnilevelController;
 use App\Http\Controllers\Backend\VendorApplicationController;
 use App\Http\Controllers\Backend\VendorConditionController;
 use App\Http\Controllers\Backend\VendorListController;
@@ -267,13 +267,12 @@ Route::controller(ReferralController::class)->group(function () {
 Route::resource('referral', ReferralController::class);
 
 /** Unilevel settings route */
-Route::controller(AdminUnilevelController::class)->group(function () {
+Route::controller(UnilevelController::class)->group(function () {
     Route::as('unilevel.')->group(function () {
-        Route::get('unilevel', 'index')->name('index');
-        Route::put('unilevel/settings/update/{id}', 'updateUnilevelSettings')
-            ->name('settings.update');
+        Route::put('unilevel/change-status', 'changeStatus')->name('change-status');
     });
 });
+Route::resource('unilevel', UnilevelController::class);
 
 /**
  * Settings Routes
