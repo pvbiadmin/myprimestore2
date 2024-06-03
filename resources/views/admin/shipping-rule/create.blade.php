@@ -30,10 +30,10 @@
                                         <div class="form-group">
                                             <label for="status">Status</label>
                                             <select name="status" id="status" class="form-control">
-                                                <option value="1" {{ old('status') == 1
+                                                <option value="1" {{ (string) old('status') === '1'
                                                     ? 'selected' : '' }}>Active
                                                 </option>
-                                                <option value="0" {{ old('status') == 0
+                                                <option value="0" {{ (string) old('status') === '0'
                                                     ? 'selected' : '' }}>Inactive
                                                 </option>
                                             </select>
@@ -45,10 +45,10 @@
                                         <div class="form-group">
                                             <label for="type">Type</label>
                                             <select name="type" id="type" class="form-control">
-                                                <option value="1" {{ old('type') == 1
+                                                <option value="1" {{ (string) old('type') === '1'
                                                     ? 'selected' : '' }}>Flat Cost
                                                 </option>
-                                                <option value="2" {{ old('type') == 2
+                                                <option value="2" {{ (string) old('type') === '2'
                                                     ? 'selected' : '' }}>Min. Order Amount
                                                 </option>
                                             </select>
@@ -83,10 +83,19 @@
     <script>
         ($ => {
             $(() => {
-                const id_field = $("#field_min_cost");
+                const idField = $("#field_min_cost");
+                const idType = $("#type");
 
-                @if ( old('type') == 2 )
-                id_field.removeClass("d-none");
+                let isType = idType.val();
+
+                if (isType === "2") {
+                    idField.removeClass("d-none");
+                } else {
+                    idField.addClass("d-none");
+                }
+
+                @if ( (string) old('type') === '2' )
+                idField.removeClass("d-none");
                 @endif
 
                 $("body").on("change", "#type", e => {
@@ -94,9 +103,9 @@
                     let type = $this.val();
 
                     if (type !== "2") {
-                        id_field.addClass("d-none");
+                        idField.addClass("d-none");
                     } else {
-                        id_field.removeClass("d-none");
+                        idField.removeClass("d-none");
                     }
                 });
             });

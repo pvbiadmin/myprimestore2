@@ -20,7 +20,7 @@ class ShippingRuleController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param \App\DataTables\ShippingRuleDataTable $dataTable
+     * @param ShippingRuleDataTable $dataTable
      * @return mixed
      */
     public function index(ShippingRuleDataTable $dataTable): mixed
@@ -31,7 +31,7 @@ class ShippingRuleController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function create(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -41,8 +41,8 @@ class ShippingRuleController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function store(Request $request): RedirectResponse
     {
@@ -64,11 +64,11 @@ class ShippingRuleController extends Controller
 
         $shipping = new ShippingRule();
 
-        $shipping->name = $request->name;
-        $shipping->type = $request->type;
-        $shipping->min_cost = $request->min_cost;
-        $shipping->cost = $request->cost;
-        $shipping->status = $request->status;
+        $shipping->name = $request->input('name');
+        $shipping->type = $request->input('type');
+        $shipping->min_cost = $request->input('min_cost');
+        $shipping->cost = $request->input('cost');
+        $shipping->status = $request->input('status');
 
         $shipping->save();
 
@@ -77,18 +77,10 @@ class ShippingRuleController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param string $id
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function edit(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -100,9 +92,9 @@ class ShippingRuleController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param string $id
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function update(Request $request, string $id): RedirectResponse
     {
@@ -123,11 +115,11 @@ class ShippingRuleController extends Controller
 
         $shipping = ShippingRule::query()->findOrFail($id);
 
-        $shipping->name = $request->name;
-        $shipping->type = $request->type;
-        $shipping->min_cost = $request->min_cost;
-        $shipping->cost = $request->cost;
-        $shipping->status = $request->status;
+        $shipping->name = $request->input('name');
+        $shipping->type = $request->input('type');
+        $shipping->min_cost = $request->input('min_cost');
+        $shipping->cost = $request->input('cost');
+        $shipping->status = $request->input('status');
 
         $shipping->save();
 
@@ -139,7 +131,7 @@ class ShippingRuleController extends Controller
      * Remove the specified resource from storage.
      *
      * @param string $id
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function destroy(string $id): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
@@ -156,14 +148,14 @@ class ShippingRuleController extends Controller
     /**
      * Handles Coupon Status Update
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $shipping = ShippingRule::query()->findOrFail($request->idToggle);
+        $shipping = ShippingRule::query()->findOrFail($request->input('idToggle'));
 
-        $shipping->status = ($request->isChecked == 'true' ? 1 : 0);
+        $shipping->status = ($request->input('isChecked') === 'true' ? 1 : 0);
         $shipping->save();
 
         return response([

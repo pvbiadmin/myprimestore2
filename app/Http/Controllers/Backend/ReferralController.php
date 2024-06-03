@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PointTransaction;
+use App\Models\ProductType;
 use App\Models\Referral;
 use App\Models\ReferralSetting;
 use App\Models\User;
@@ -47,7 +48,9 @@ class ReferralController extends Controller
      */
     public function create()
     {
-        return view('admin.commissions.direct-referral.create');
+        $packages = ProductType::where('is_package', 1)->get();
+
+        return view('admin.commissions.direct-referral.create', compact('packages'));
     }
 
     /**
@@ -82,8 +85,10 @@ class ReferralController extends Controller
     public function edit(string $id)
     {
         $referralSetting = ReferralSetting::findOrFail($id);
+        $packages = ProductType::where('is_package', 1)->get();
 
-        return view('admin.commissions.direct-referral.edit', compact('referralSetting'));
+        return view('admin.commissions.direct-referral.edit',
+            compact('referralSetting', 'packages'));
     }
 
     /**
@@ -214,12 +219,10 @@ class ReferralController extends Controller
      */
     public static function addReferralBonus($orderId): void
     {
-        $order = Order::query()->findOrFail($orderId);
+        $order = Order::findOrFail($orderId);
         $orderProduct = OrderProduct::where('order_id', $order->id)->first();
-        $product = $orderProduct->product;
-        $product_type = $product->product_type;
 
-        if ($product_type === 'basic_pack') {
+        if ($orderProduct->product->productType->is_package) {
             $user = User::findOrFail($order->user_id);
             $referral = Referral::where('referred_id', $user->id)->first();
             $referrer = User::findOrFail($referral->referrer_id);

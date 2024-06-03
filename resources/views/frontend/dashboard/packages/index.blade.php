@@ -28,7 +28,9 @@
                             <div class="row">
                                 @if ( count($packages) > 0 )
                                     @foreach ( $packages as $package )
-                                        <x-product-card-list :product="$package" :section="'package'"/>
+                                        @if ( $package->productType->is_package === 1 )
+                                            <x-product-card-list :product="$package" :section="'package'"/>
+                                        @endif
                                     @endforeach
                                 @else
                                     <div class="col-xl-12">
@@ -48,5 +50,4 @@
             </div>
         </div>
     </section>
-
 @endsection

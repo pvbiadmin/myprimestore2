@@ -161,12 +161,28 @@ class PaymentController extends Controller
             $referral_id = $referral_session['id'];
             $package = $referral_session['package'];
 
-            $product = Product::where('product_type', $package)->first();
+            $product = Product::whereProductTypeId($package)->first();
+            $product_price = $product->price ?? 0;
+            $product_points = $product->points ?? 0;
 
-            $referralSettings = ReferralSetting::first();
+//            dd($product);
 
-            $bonus = $product->price * $referralSettings->bonus / 100;
-            $points = $product->points * $referralSettings->points / 100;
+            $referralSettings = ReferralSetting::wherePackage($package)->first();
+            $referral_bonus = $referralSettings->bonus / 100;
+            $referral_points = $referralSettings->points / 100;
+
+            $bonus = $product_price * $referral_bonus;
+            $points = $product_points * $referral_points;
+
+//            dd(
+//                [
+//                    'product' => ['price' => $product_price, 'points' => $product_points],
+//                    'referrral_settings' => [
+//                        'bonus' => $referralSettings->bonus / 100,
+//                        'points' => $referralSettings->points / 100
+//                    ]
+//                ]
+//            );
 
             // encode into referral table and activate
             Referral::create([
@@ -678,12 +694,7 @@ class PaymentController extends Controller
         // amount calculation
         $payableAmount = round(payableTotal(), 2);
 
-//        dd($payableAmount);
-
         if ($payableAmount > 0) {
-
-//            dd('hehehe');
-
             $order = $this->storeOrder(
                 'GCASH',
                 0,
@@ -692,13 +703,9 @@ class PaymentController extends Controller
                 $setting->currency_name
             );
 
-//            dd($order);
-
             $flag = false;
 
             if (!$flag) {
-//                dd($flag);
-
                 $details = ['order_id' => $order->id];
 
                 $this->referralEntry($details, 'pending_credit', false);
@@ -710,8 +717,6 @@ class PaymentController extends Controller
             if ($flag) {
                 $this->clearSession();
             }
-
-//            dd($flag);
 
             return redirect()->route('user.payment.gcash', [
                 'order_id' => $order->id,

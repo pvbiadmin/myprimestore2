@@ -6,7 +6,7 @@
         }
     }} {{ @$key }}">
     <div class="wsus__product_item">
-        <span class="wsus__new">{{ productType($product->product_type) }}</span>
+        <span class="wsus__new">{{ $product->productType->name }}</span>
         @if( hasDiscount($product) )
             <span class="wsus__minus">
             -{{ displayNumber(

@@ -24,17 +24,18 @@ use Illuminate\Support\Str;
  * @property int|null $subcategory_id
  * @property int|null $child_category_id
  * @property int $brand_id
+ * @property int $product_type_id
  * @property int $quantity
  * @property string $short_description
  * @property string|null $long_description
  * @property string|null $video_link
  * @property string|null $sku
  * @property float $price
- * @property float $points
  * @property float|null $offer_price
  * @property string|null $offer_start_date
  * @property string|null $offer_end_date
  * @property string|null $product_type
+ * @property float $points
  * @property int $status
  * @property int $is_approved
  * @property string|null $seo_title
@@ -65,7 +66,9 @@ use Illuminate\Support\Str;
  * @method static Builder|Product whereOfferPrice($value)
  * @method static Builder|Product whereOfferStartDate($value)
  * @method static Builder|Product wherePrice($value)
+ * @method static Builder|Product wherePoints($value)
  * @method static Builder|Product whereProductType($value)
+ * @method static Builder|Product whereProductTypeId($value)
  * @method static Builder|Product whereQuantity($value)
  * @method static Builder|Product whereSeoDescription($value)
  * @method static Builder|Product whereSeoTitle($value)
@@ -85,11 +88,11 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'points', 'slug', 'thumb_image', 'vendor_id', 'category_id',
-        'subcategory_id', 'child_category_id', 'brand_id', 'quantity',
+        'name', 'slug', 'thumb_image', 'vendor_id', 'category_id',
+        'subcategory_id', 'child_category_id', 'brand_id', 'product_type_id', 'quantity',
         'short_description', 'long_description', 'video_link', 'sku',
         'price', 'offer_price', 'offer_start_date', 'offer_end_date',
-        'product_type', 'status', 'is_approved', 'seo_title', 'seo_description'
+        'product_type', 'points', 'status', 'is_approved', 'seo_title', 'seo_description'
     ];
 
     protected static function boot(): void
@@ -151,6 +154,16 @@ class Product extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    /**
+     * Relationship: This Model Belongs to ProductType
+     *
+     * @return BelongsTo
+     */
+    public function productType(): BelongsTo
+    {
+        return $this->belongsTo(ProductType::class);
     }
 
     /**

@@ -9,8 +9,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class SellerProductDataTable extends DataTable
@@ -48,13 +46,7 @@ class SellerProductDataTable extends DataTable
                 return '<img src="' . asset($query->thumb_image) . '" width="70" alt="" />';
             })
             ->addColumn('type', function ($query) {
-                return match ($query->product_type) {
-                    'featured_product' => '<i class="badge badge-success">Featured Product</i>',
-                    'top_product' => '<i class="badge badge-info">Top Product</i>',
-                    'best_product' => '<i class="badge badge-warning">Best Product</i>',
-                    'new_arrival' => '<i class="badge badge-danger">New Arrival</i>',
-                    default => '<i class="badge badge-dark">None</i>',
-                };
+                return $query->productType->name;
             })
             ->addColumn('vendor', function ($query) {
                 return $query->vendor->shop_name;
@@ -62,7 +54,7 @@ class SellerProductDataTable extends DataTable
             ->addColumn('active', function ($query) {
                 return '<label class="custom-switch mt-2">
                         <input type="checkbox" name="status" class="custom-switch-input change-status" ' .
-                    ($query->status == 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
+                    ($query->status === 1 ? 'checked' : '') . ' data-id="' . $query->id . '">
                         <span class="custom-switch-indicator"></span>
                     </label>';
             })

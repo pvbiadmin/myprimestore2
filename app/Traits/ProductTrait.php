@@ -62,7 +62,8 @@ trait ProductTrait
         $product->status = $request->input('status');
 
         if (!$vendor) {
-            $product->product_type = $request->input('product_type');
+//            $product->product_type = $request->input('product_type');
+            $product->product_type_id = $request->input('product_type');
         }
 
         if (!$update) {
@@ -125,7 +126,6 @@ trait ProductTrait
 
         $validator = Validator::make($request->all(), [
             'image' => $image_rule,
-//            'points' => ['required'],
             'name' => ['required', 'max:200'],
             'category' => ['required'],
             'brand' => ['required'],

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\ChildCategory;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\ProductType;
 use App\Models\Subcategory;
 use App\Traits\ImageUploadTrait;
 use App\Traits\ProductTrait;
@@ -48,9 +49,10 @@ class ProductController extends Controller
         $subcategories = Subcategory::all();
         $child_categories = ChildCategory::all();
         $brands = Brand::all();
+        $types = ProductType::all();
 
         return view('admin.product.create',
-            compact('categories', 'subcategories', 'child_categories', 'brands'));
+            compact('categories', 'subcategories', 'child_categories', 'brands', 'types'));
     }
 
     /**
@@ -65,7 +67,6 @@ class ProductController extends Controller
 
         $product = new Product();
 
-        // Handle image upload
         $image_path = $this->uploadImage($request, 'image', 'uploads');
 
         $this->saveProduct($request, $product, $image_path, false);
@@ -89,13 +90,15 @@ class ProductController extends Controller
         $child_categories = ChildCategory::query()
             ->where('subcategory_id', '=', $product->subcategory_id)->get();
         $brands = Brand::all();
+        $types = ProductType::all();
 
         return view('admin.product.edit', compact(
             'product',
             'brands',
             'categories',
             'subcategories',
-            'child_categories'
+            'child_categories',
+            'types'
         ));
     }
 

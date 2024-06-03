@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\DataTables\BrandDataTable;
+use App\DataTables\ProductTypeDataTable;
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
 use App\Models\Product;
+use App\Models\ProductType;
 use App\Traits\ImageUploadTrait;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
@@ -18,19 +18,19 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class BrandController extends Controller
+class ProductTypeController extends Controller
 {
     use ImageUploadTrait;
 
     /**
      * Display a listing of the resource.
      *
-     * @param BrandDataTable $dataTable
+     * @param ProductTypeDataTable $dataTable
      * @return mixed
      */
-    public function index(BrandDataTable $dataTable): mixed
+    public function index(ProductTypeDataTable $dataTable): mixed
     {
-        return $dataTable->render('admin.brand.index');
+        return $dataTable->render('admin.type.index');
     }
 
     /**
@@ -40,7 +40,9 @@ class BrandController extends Controller
      */
     public function create(): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
-        return view('admin.brand.create');
+        $degrees_available = /*$this->degreesAvailable()*/$this->productTypeDegrees();
+
+        return view('admin.type.create', compact('degrees_available'));
     }
 
     /**
@@ -53,14 +55,12 @@ class BrandController extends Controller
     {
         $this->validateRequest($request);
 
-        $brand = new Brand();
+        $type = new ProductType();
 
-        $image_path = $this->uploadImage($request, 'logo', 'uploads');
+        $this->productTypeSave($request, $type);
 
-        $this->brandSave($request, $brand, $image_path);
-
-        return redirect()->route('admin.brand.index')
-            ->with(['message' => 'New Brand Added']);
+        return redirect()->route('admin.type.index')
+            ->with(['message' => 'New Type Added']);
     }
 
     /**
@@ -71,9 +71,10 @@ class BrandController extends Controller
      */
     public function edit(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
-        $brand = Brand::query()->findOrFail($id);
+        $type = ProductType::findOrFail($id);
+        $degrees_available = /*$this->degreesAvailable()*/$this->productTypeDegrees();
 
-        return view('admin.brand.edit', compact('brand'));
+        return view('admin.type.edit', compact('type', 'degrees_available'));
     }
 
     /**
@@ -85,16 +86,14 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        $this->validateRequest($request, true);
+        $this->validateRequest($request);
 
-        $brand = Brand::query()->findOrFail($id);
+        $type = ProductType::findOrFail($id);
 
-        $image_path = $this->updateImage($request, 'logo', 'uploads', $brand->logo);
+        $this->productTypeSave($request, $type);
 
-        $this->brandSave($request, $brand, $image_path);
-
-        return redirect()->route('admin.brand.index')
-            ->with(['message' => 'Brand Updated Successfully']);
+        return redirect()->route('admin.type.index')
+            ->with(['message' => 'Product Type Updated Successfully']);
     }
 
     /**
@@ -105,61 +104,56 @@ class BrandController extends Controller
      */
     public function destroy(string $id): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $brand = Brand::query()->findOrFail($id);
+        $type = ProductType::findOrFail($id);
 
-        if (Product::where('brand_id', $brand->id)->count() > 0) {
+        if (Product::where('product_type_id', $type->id)->count() > 0) {
             return response([
                 'status' => 'error',
-                'message' => 'This brand has products, you can\'t delete it.'
+                'message' => 'This type has products, you can\'t delete it.'
             ]);
-        }
-
-        if (!empty($brand->logo)) {
-            $this->deleteImage($brand->logo);
-            $brand->delete();
         }
 
         return response([
             'status' => 'success',
-            'message' => 'Brand Deleted Successfully.'
+            'message' => 'Type Deleted Successfully.'
         ]);
     }
 
     /**
-     * Handles Brand Status Update
+     * Handles Type Status Update
      *
      * @param Request $request
      * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function changeStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $brand = Brand::query()->findOrFail($request->input('idToggle'));
+        $type = ProductType::findOrFail($request->input('idToggle'));
 
-        $brand->status = ($request->input('isChecked') === 'true' ? 1 : 0);
-        $brand->save();
+        $type->status = ($request->input('isChecked') === 'true' ? 1 : 0);
+        $type->save();
 
         return response([
             'status' => 'success',
-            'message' => 'Brand Status Updated.'
+            'message' => 'Status Updated'
         ]);
     }
 
     /**
-     * Handles Brand `Is-Featured` Update
+     * Handles Type `Is-Featured` Update
      *
      * @param Request $request
      * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
-    public function changeIsFeatured(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
+    public function changeIsPackage(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $slider = Brand::query()->findOrFail($request->input('idToggle'));
+        $type = ProductType::findOrFail($request->input('idToggle'));
 
-        $slider->is_featured = ($request->input('isChecked') === 'true' ? 1 : 0);
-        $slider->save();
+        $type->is_package = ($request->input('isChecked') === 'true' ? 1 : 0);
+        $type->save();
 
         return response([
             'status' => 'success',
-            'message' => 'Brand Is-Featured Updated.'
+            'message' => 'Is-Package Status Updated'
         ]);
     }
 
@@ -167,21 +161,13 @@ class BrandController extends Controller
      * Validate the given request.
      *
      * @param Request $request
-     * @param bool $update
      * @return void
      */
-    protected function validateRequest(Request $request, $update = false): void
+    protected function validateRequest(Request $request): void
     {
-        $logo_rules = ['image', 'max:2048'];
-
-        if (!$update) {
-            $logo_rules[] = 'required';
-        }
-
         $validator = Validator::make($request->all(), [
-            'logo' => $logo_rules,
             'name' => ['required', 'max:200'],
-            'is_featured' => ['required'],
+            'is_package' => ['required'],
             'status' => ['required']
         ]);
 
@@ -196,23 +182,47 @@ class BrandController extends Controller
     }
 
     /**
-     * Save Brand
+     * Save Type
      *
      * @param Request $request
-     * @param $brand
-     * @param $image_path
+     * @param $type
      */
-    protected function brandSave(Request $request, $brand, $image_path): void
+    protected function productTypeSave(Request $request, $type): void
     {
-        if ($image_path) {
-            $brand->logo = $image_path;
+        $type->name = $request->input('name');
+        $type->slug = Str::slug($request->input('name'));
+        $type->is_package = $request->input('is_package');
+        $type->degree = $request->input('degree') ?? 0;
+        $type->status = $request->input('status');
+
+        $type->save();
+    }
+
+    /**
+     * Degrees assignable to a type
+     *
+     * @return int[]
+     */
+    public function productTypeDegrees(): array
+    {
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    }
+
+    /**
+     * @return array
+     */
+    public function degreesAvailable(): array
+    {
+        $packages = ProductType::where('is_package', 1)->orderBy('degree')->get();
+
+        $package_degrees = [];
+
+        if (count($packages) > 0) {
+            foreach ($packages as $package) {
+                $package_degrees[] = $package->degree;
+            }
         }
 
-        $brand->name = $request->input('name');
-        $brand->slug = Str::slug($request->input('name'));
-        $brand->is_featured = $request->input('is_featured');
-        $brand->status = $request->input('status');
-
-        $brand->save();
+        return array_diff($this->productTypeDegrees(), $package_degrees);
     }
 }

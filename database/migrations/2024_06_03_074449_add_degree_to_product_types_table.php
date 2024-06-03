@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->double('points')->default(0)->after('product_type');
+        Schema::table('product_types', static function (Blueprint $table) {
+            $table->integer('degree')
+                ->default(0)
+                ->after('is_package');
         });
     }
 
@@ -21,8 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('points');
+        Schema::table('product_types', static function (Blueprint $table) {
+            $table->dropColumn('degree');
         });
     }
 };

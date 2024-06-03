@@ -1,6 +1,6 @@
 <div class="col-xl-12">
     <div class="wsus__product_item wsus__list_view">
-        <span class="wsus__new">{{ productType($product->product_type) }}</span>
+        <span class="wsus__new">{{ $product->productType->name }}</span>
         @if ( hasDiscount($product) )
             <span class="wsus__minus">
             -{{ displayNumber(discountPercent($product->price, $product->offer_price), 2) }}%</span>

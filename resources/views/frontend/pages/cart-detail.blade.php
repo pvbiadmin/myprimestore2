@@ -35,6 +35,9 @@
         <div class="container">
             <div class="row">
                 @if( count($cart_items) > 0 )
+                    @php
+                        $cart_package = cartPackage();
+                    @endphp
                     <div class="col-xl-9">
                         <div class="wsus__cart_list">
                             <div class="table-responsive">
@@ -102,15 +105,14 @@
 
                                             <td class="wsus__pro_select">
                                                 <div class="product_qty_wrapper">
-                                                    @if ( $item->options->is_package
-                                                        && str($item->options->is_package) === '1' )
+                                                    @if ( count($cart_package) > 0 )
                                                         {{ $item->qty }}
                                                     @else
                                                         <button class="decrement-cart-qty less-cart-qty">-</button>
                                                         <input class="product-qty cart-qty" name="quantity"
                                                                type="text" min="1" max="10" value="{{ $item->qty }}"
                                                                data-row-id="{{ $item->rowId }}"
-                                                               aria-label="quantity" readonly/>
+                                                               aria-label="quantity" readonly />
                                                         <button class="increment-cart-qty plus-cart-qty">+</button>
                                                     @endif
                                                 </div>
@@ -127,20 +129,18 @@
                             </div>
                         </div>
                     </div>
-                    @php
-                        $cart_package = cartPackage();
-                    @endphp
                     <div class="col-xl-3">
                         <div class="wsus__cart_list_footer_button" id="sticky_sidebar">
                             <h6>total cart</h6>
                             <p>subtotal: <span id="cart-detail-subtotal">{{ $settings->currency_icon .
                                 number_format(cartSubtotal(), 2) }}</span></p>
                             <p>coupon(-): <span id="coupon-discount">{{ $settings->currency_icon .
-                                    number_format(couponDiscount(), 2) }}</span></p>
+                                number_format(couponDiscount(), 2) }}</span></p>
                             <p class="total"><span>total:</span> <span id="cart-total">{{
                                 $settings->currency_icon . number_format(cartTotal(), 2) }}</span></p>
-                            @if ( $cart_package && $cart_package[0]->options->is_package === '1' )
+                            @if ( count($cart_package) > 0 )
                                 <form id="referral_form">
+                                    <input type="hidden" name="productId" value="{{ $cart_package[0]->id }}">
                                     <input type="text" name="referral" value="{{ session()->has('referral')
                                         ? session('referral')['code'] : '' }}"
                                            placeholder="Referral Code" aria-label="referral">

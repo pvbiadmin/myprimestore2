@@ -31,6 +31,7 @@ use App\Http\Controllers\Backend\PaymentSettingController;
 use App\Http\Controllers\Backend\PaypalSettingController;
 use App\Http\Controllers\Backend\ProductController;
 use App\Http\Controllers\Backend\ProductImageGalleryController;
+use App\Http\Controllers\Backend\ProductTypeController;
 use App\Http\Controllers\Backend\ProductVariantController;
 use App\Http\Controllers\Backend\ProductVariantOptionController;
 use App\Http\Controllers\Backend\ProfileController;
@@ -108,6 +109,17 @@ Route::controller(BrandController::class)->group(function () {
     });
 });
 Route::resource('brand', BrandController::class);
+
+/**
+ * Product Type Routes
+ */
+Route::controller(ProductTypeController::class)->group(function () {
+    Route::as('type.')->group(function () {
+        Route::put('type/change-status', 'changeStatus')->name('change-status');
+        Route::put('type/change-is-package', 'changeIsPackage')->name('change-is-package');
+    });
+});
+Route::resource('type', ProductTypeController::class);
 
 /**
  * Vendor Profile Routes

@@ -110,26 +110,11 @@
                                             <label for="product_type">Type</label>
                                             <select name="product_type" id="product_type" class="form-control">
                                                 <option value="">Select</option>
-                                                <option value="new_arrival" {{ (hasVal(old('product_type'))
-                                                    ? old('product_type') : $product->product_type
-                                                    ) === 'new_arrival' ? 'selected' : '' }}>New Arrival
-                                                </option>
-                                                <option value="featured_product" {{ (hasVal(old('product_type'))
-                                                    ? old('product_type') : $product->product_type
-                                                    ) === 'featured_product' ? 'selected' : '' }}>Featured
-                                                </option>
-                                                <option value="top_product" {{ (hasVal(old('product_type'))
-                                                    ? old('product_type') : $product->product_type
-                                                    ) === 'top_product' ? 'selected' : '' }}>Top Product
-                                                </option>
-                                                <option value="best_product" {{ (hasVal(old('product_type'))
-                                                    ? old('product_type') : $product->product_type
-                                                    ) === 'best_product' ? 'selected' : '' }}>Best Product
-                                                </option>
-                                                <option value="basic_pack" {{ (hasVal(old('product_type'))
-                                                    ? old('product_type') : $product->product_type
-                                                    ) === 'basic_pack' ? 'selected' : '' }}>Basic Pack
-                                                </option>
+                                                @foreach( $types as $type )
+                                                    <option value="{{ $type->id }}" {{ (hasVal(old('product_type'))
+                                                        ? old('product_type') : $product->product_type_id) === $type->id
+                                                            ? 'selected' : '' }}>{{ $type->name }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>

@@ -184,7 +184,7 @@ class OrderController extends Controller
     {
         ['orderId' => $orderId, 'status' => $status] = $request->all();
 
-        $order = Order::query()->findOrFail($orderId);
+        $order = Order::findOrFail($orderId);
 
         // referral wallet and points computation
         ReferralController::addReferralBonus($orderId);

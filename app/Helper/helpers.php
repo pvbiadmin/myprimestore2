@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\GeneralSetting;
+use App\Models\Product;
 use App\Models\Referral;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\Session;
 use JetBrains\PhpStorm\Pure;
+use LaravelIdea\Helper\App\Models\_IH_Product_C;
 
 /**
  * Sets admin sidebar menu active
@@ -62,22 +64,6 @@ function hasDiscount($product): bool
 function discountPercent($price_original, $price_discount): float|int
 {
     return 100 * ($price_original - $price_discount) / $price_original;
-}
-
-/**
- * @param $type
- * @return string
- */
-function productType($type): string
-{
-    return match ($type) {
-        'featured_product' => 'Featured',
-        'top_product' => 'Top',
-        'best_product' => 'Best',
-        'new_arrival' => 'New',
-        'basic_pack' => 'Basic',
-        default => '',
-    };
 }
 
 /**
@@ -1032,7 +1018,9 @@ function cartPackage(): array
 
     if (isset(session('cart')['default']) && session()->has('cart')) {
         foreach (session('cart')['default'] as $val) {
-            if ($val->options->is_package === '1') {
+            $product = Product::findOrFail($val->id);
+            $is_package = $product->productType->is_package;
+            if ($is_package === 1) {
                 $cart_package[] = $val;
             }
         }
@@ -1106,4 +1094,39 @@ function payableTotal(): mixed
 function getCurrencyIcon(): string
 {
     return GeneralSetting::first()->currency_icon;
+}
+
+
+/**
+ * Packages bought by user
+ *
+ * @param $userId
+ * @return _IH_Product_C|array
+ */
+function packagesBought($userId): _IH_Product_C|array
+{
+    return Product::where('product_type', 'like', '%pack')
+        ->whereIn('id', function ($query) use ($userId) {
+            $query->select('product_id')
+                ->from('order_products')
+                ->join('orders', 'orders.id', '=', 'order_products.order_id')
+                ->where('orders.user_id', '=', $userId);
+        })->get();
+}
+
+/**
+ * Last Package bought by user
+ *
+ * @param $userId
+ * @return Product|null
+ */
+function lastPackageBought($userId): ?Product
+{
+    return Product::where('product_type', 'like', '%pack')
+        ->whereIn('id', function ($query) use ($userId) {
+            $query->select('product_id')
+                ->from('order_products')
+                ->join('orders', 'orders.id', '=', 'order_products.order_id')
+                ->where('orders.user_id', '=', $userId);
+        })->latest()->first();
 }

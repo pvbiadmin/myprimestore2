@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\ReferralSetting;
+use App\Models\ProductType;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -10,7 +10,7 @@ use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
-class ReferralSettingDataTable extends DataTable
+class ProductTypeDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -21,12 +21,15 @@ class ReferralSettingDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($query) {
-                $view_btn = '<a href="' . route('admin.referral.edit', $query->id) .
+                $edit_btn = '<a href="' . route('admin.type.edit', $query->id) .
                     '" class="btn btn-primary"><i class="far fa-edit"></i></a>';
-                $delete_btn = '<a href="' . route('admin.referral.destroy', $query->id) .
-                    '" class="btn btn-danger ml-2 delete-item"><i class="far fa-trash-alt"></i></a>';
+                $delete_btn = '<a href="' . route('admin.type.destroy', $query->id) .
+                    '" class="btn btn-danger ml-2 delete-item"><i class="far fa-trash-alt"></i</a>';
 
-                return $view_btn . $delete_btn;
+                return $edit_btn . $delete_btn;
+            })
+            ->addColumn('is_package', function ($query) {
+                return $query->is_package ? '<i class="fas fa-check-circle"></i>' : '';
             })
             ->addColumn('status', function ($query) {
                 return '<label class="custom-switch mt-2">
@@ -35,23 +38,14 @@ class ReferralSettingDataTable extends DataTable
                         <span class="custom-switch-indicator"></span>
                     </label>';
             })
-            ->addColumn('bonus', function ($query) {
-                return $query->bonus . '%';
-            })
-            ->addColumn('points', function ($query) {
-                return $query->points . '%';
-            })
-            ->addColumn('package', function ($query) {
-                return $query->productType->name;
-            })
-            ->rawColumns(['action', 'status', 'bonus', 'points', 'package'])
+            ->rawColumns(['action', 'is_package', 'status'])
             ->setRowId('id');
     }
 
     /**
      * Get the query source of dataTable.
      */
-    public function query(ReferralSetting $model): QueryBuilder
+    public function query(ProductType $model): QueryBuilder
     {
         return $model->newQuery();
     }
@@ -62,7 +56,7 @@ class ReferralSettingDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('referralsetting-table')
+                    ->setTableId('brand-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
@@ -85,14 +79,13 @@ class ReferralSettingDataTable extends DataTable
     {
         return [
             Column::make('id'),
-            Column::make('package'),
-            Column::make('bonus'),
-            Column::make('points'),
+            Column::make('name')->width(300),
+            Column::make('is_package'),
             Column::make('status'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->width(100)
+                ->width(200)
                 ->addClass('text-center'),
         ];
     }
@@ -102,6 +95,6 @@ class ReferralSettingDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ReferralSetting_' . date('YmdHis');
+        return 'Brand_' . date('YmdHis');
     }
 }

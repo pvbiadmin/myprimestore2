@@ -42,6 +42,7 @@
 
             <li class="dropdown {{ setActive([
                 'admin.brand.*',
+                'admin.type.*',
                 'admin.products.*',
                 'admin.seller-products.*',
                 'admin.products-image-gallery.*',
@@ -54,6 +55,9 @@
                 <ul class="dropdown-menu">
                     <li class="{{ setActive(['admin.brand.*']) }}">
                         <a class="nav-link" href="{{ route('admin.brand.index') }}">Brands</a>
+                    </li>
+                    <li class="{{ setActive(['admin.type.*']) }}">
+                        <a class="nav-link" href="{{ route('admin.type.index') }}">Types</a>
                     </li>
                     <li class="{{ setActive([
                         'admin.products.*',

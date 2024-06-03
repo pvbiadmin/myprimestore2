@@ -35,9 +35,9 @@ class CartController extends Controller
         $product_id = $request->input('product_id');
         $quantity = $request->input('quantity');
         $variant_options = $request->input('variant_options');
-        $is_package = $request->input('is_package');
+//        $is_package = $request->input('is_package');
 
-        $product = Product::query()->findOrFail($product_id);
+        $product = Product::findOrFail($product_id);
 
         if ($product->quantity === 0) {
             return response([
@@ -81,7 +81,7 @@ class CartController extends Controller
         $cart_data['options']['variant_price_total'] = $variant_price_total;
         $cart_data['options']['image'] = $product->thumb_image;
         $cart_data['options']['slug'] = $product->slug;
-        $cart_data['options']['is_package'] = $is_package;
+//        $cart_data['options']['is_package'] = $is_package;
 
         Cart::add($cart_data);
 
@@ -369,6 +369,7 @@ class CartController extends Controller
     public function applyReferral(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
         $referral_code = $request->input('referral');
+        $product_id = $request->input('productId');
 
         if ($referral_code === null) {
             return response([
@@ -378,9 +379,6 @@ class CartController extends Controller
         }
 
         $referrer_id = $this->decodeReferral($referral_code);
-//        $referrer = User::findOrFail($referrer_id)->first();
-
-//        dd($referrer_id);
 
         // Check if the referral pair exists in the referrals table
         $referralExists = Referral::query()
@@ -397,7 +395,7 @@ class CartController extends Controller
 
         Session::put('referral', [
             'id' => $referrer_id,
-            'package' => 'basic_pack', // product_type
+            'package' => /*'basic_pack'*/ Product::findOrFail($product_id)->product_type_id, // product_type
             'code' => $referral_code
         ]);
 
