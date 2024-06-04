@@ -35,7 +35,13 @@ class UnilevelSettingDataTable extends DataTable
                         <span class="custom-switch-indicator"></span>
                     </label>';
             })
-            ->rawColumns(['action', 'status'])
+            ->addColumn('bonus', function ($query) {
+                return $query->bonus . '%';
+            })
+            ->addColumn('package', function ($query) {
+                return $query->productType->name;
+            })
+            ->rawColumns(['action', 'status', 'bonus', 'package'])
             ->setRowId('id');
     }
 

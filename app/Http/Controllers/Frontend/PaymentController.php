@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Http\Controllers\Backend\ReferralController;
 use App\Http\Controllers\Controller;
 use App\Models\CodSetting;
 use App\Models\Coupon;
@@ -11,13 +12,10 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PaymayaSetting;
 use App\Models\PaypalSetting;
-use App\Models\PointTransaction;
 use App\Models\Product;
-use App\Models\Referral;
 use App\Models\ReferralSetting;
 use App\Models\Transaction;
-use App\Models\User;
-use App\Models\WalletTransaction;
+use App\Traits\PointTrait;
 use Auth;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Contracts\View\Factory;
@@ -35,6 +33,8 @@ use Throwable;
 
 class PaymentController extends Controller
 {
+    use PointTrait;
+
     /**
      * View Payment Page
      *
@@ -143,60 +143,6 @@ class PaymentController extends Controller
     }
 
     /**
-     * Enter user into referral table with activation
-     * Add to sponsor wallet
-     * Add to sponsor points
-     *
-     * @param array $details
-     * @param string $type
-     * @param bool $activated
-     * @return void
-     * @throws JsonException
-     */
-    public function referralEntry($details = [], $type = 'credit', $activated = true): void
-    {
-        $referral_session = Session::get('referral');
-
-        if ($referral_session && isset($referral_session['id'])) {
-            $referral_id = $referral_session['id'];
-            $package = $referral_session['package'];
-
-            $product = Product::whereProductTypeId($package)->first();
-            $product_price = $product->price ?? 0;
-            $product_points = $product->points ?? 0;
-
-//            dd($product);
-
-            $referralSettings = ReferralSetting::wherePackage($package)->first();
-            $referral_bonus = $referralSettings->bonus / 100;
-            $referral_points = $referralSettings->points / 100;
-
-            $bonus = $product_price * $referral_bonus;
-            $points = $product_points * $referral_points;
-
-//            dd(
-//                [
-//                    'product' => ['price' => $product_price, 'points' => $product_points],
-//                    'referrral_settings' => [
-//                        'bonus' => $referralSettings->bonus / 100,
-//                        'points' => $referralSettings->points / 100
-//                    ]
-//                ]
-//            );
-
-            // encode into referral table and activate
-            Referral::create([
-                'referrer_id' => $referral_id,
-                'referred_id' => auth()->user()->id,
-                'status' => $activated ? 1 : 0,
-            ]);
-
-            $this->addToWallet($referral_id, $bonus, $details, $type);
-            $this->addToPoints($referral_id, $points, $details, $type);
-        }
-    }
-
-    /**
      * Add point rewards
      *
      * @throws JsonException
@@ -207,100 +153,14 @@ class PaymentController extends Controller
 
         $point_reward_session = Session::get('point_reward');
 
-//        dd($point_reward_session);
-
         if ($point_reward_session && isset($point_reward_session['id'])) {
             $product = Product::findOrFail($point_reward_session['product_id']);
             $referralSettings = ReferralSetting::first();
 
-//            dd($referralSettings);
-
             $points = $product->points * $point_reward_session['quantity'] * $referralSettings->points / 100;
 
-//            dd($points);
-
-            $this->addToPoints($user_id, $points, $details, $type);
+            self::addToPoints($user_id, $points, $details, $type);
         }
-    }
-
-    /**
-     * Add to user wallet
-     *
-     * @param $user_id
-     * @param $value
-     * @param array $details
-     * @param string $type
-     * @throws JsonException
-     */
-    public function addToWallet($user_id, $value, $details = [], $type = 'credit'): void
-    {
-        $user = User::findOrFail($user_id);
-
-        // add bonus and points to referrer
-        $wallet = $user->wallet;
-
-        if (!$wallet) {
-            // Create a wallet record for the user with a zero balance
-            $wallet = $user->wallet()->create(['balance' => 0]);
-        }
-
-        $wallet->balance += ($type === 'credit' ? $value : 0);
-        $wallet->save();
-
-        $data = [
-            'wallet_id' => $wallet->id,
-            'type' => $type,
-            'amount' => $value,
-            'details' => json_encode($details, JSON_THROW_ON_ERROR)
-        ];
-
-//        if ($details !== []) {
-//            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
-//        }
-
-        WalletTransaction::create($data);
-    }
-
-    /**
-     * Add to user Points
-     *
-     * @param $user_id
-     * @param $value
-     * @param array $details
-     * @param string $type
-     * @throws JsonException
-     */
-    public function addToPoints($user_id, $value, $details = [], $type = 'credit'): void
-    {
-        $user = User::findOrFail($user_id);
-
-//        dd($user);
-
-        // add to user points
-        $points = $user->point;
-
-        if (!$points) {
-            // Create a wallet record for the user with a zero balance
-            $points = $user->point()->create(['balance' => 0]);
-        }
-
-        $points->balance += ($type === 'credit' ? $value : 0);
-        $points->save();
-
-        $data = [
-            'point_id' => $points->id,
-            'type' => $type,
-            'points' => $value,
-            'details' => json_encode($details, JSON_THROW_ON_ERROR)
-        ];
-
-//        dd($data);
-
-//        if (!empty($details)) {
-//            $data['details'] = json_encode($details, JSON_THROW_ON_ERROR);
-//        }
-
-        PointTransaction::create($data);
     }
 
     /**
@@ -590,7 +450,7 @@ class PaymentController extends Controller
                     $flag = false;
 
                     if (!$flag) {
-                        $this->referralEntry(['order_id' => $order->id]);
+                        ReferralController::referralEntry(['order_id' => $order->id]);
                         $this->pointRewards(['order_id' => $order->id]);
 
                         $flag = true;
@@ -659,7 +519,7 @@ class PaymentController extends Controller
             $flag = false;
 
             if (!$flag) {
-                $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+                ReferralController::referralEntry(['order_id' => $order->id], 'pending_credit', false);
                 $this->pointRewards(['order_id' => $order->id], 'pending_credit');
 
                 $flag = true;
@@ -708,7 +568,7 @@ class PaymentController extends Controller
             if (!$flag) {
                 $details = ['order_id' => $order->id];
 
-                $this->referralEntry($details, 'pending_credit', false);
+                ReferralController::referralEntry($details, 'pending_credit', false);
                 $this->pointRewards($details, 'pending_credit');
 
                 $flag = true;
@@ -758,7 +618,7 @@ class PaymentController extends Controller
             $flag = false;
 
             if (!$flag) {
-                $this->referralEntry(['order_id' => $order->id], 'pending_credit', false);
+                ReferralController::referralEntry(['order_id' => $order->id], 'pending_credit', false);
                 $this->pointRewards(['order_id' => $order->id], 'pending_credit');
 
                 $flag = true;

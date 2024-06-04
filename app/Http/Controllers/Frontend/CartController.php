@@ -35,7 +35,7 @@ class CartController extends Controller
         $product_id = $request->input('product_id');
         $quantity = $request->input('quantity');
         $variant_options = $request->input('variant_options');
-//        $is_package = $request->input('is_package');
+        $is_package = $request->input('is_package');
 
         $product = Product::findOrFail($product_id);
 
@@ -84,6 +84,10 @@ class CartController extends Controller
 //        $cart_data['options']['is_package'] = $is_package;
 
         Cart::add($cart_data);
+
+        if ($is_package && (string) $is_package === '1' && hasReferral(Auth::user()->id)) {
+            $this->applyReferral($request);
+        }
 
         $this->applyRewards($product_id, $quantity);
 
@@ -368,36 +372,44 @@ class CartController extends Controller
      */
     public function applyReferral(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {
-        $referral_code = $request->input('referral');
         $product_id = $request->input('productId');
 
-        if ($referral_code === null) {
-            return response([
-                'status' => 'error',
-                'message' => 'Enter referral code.'
+        if (!hasReferral(Auth::user()->id)) {
+            $referral_code = $request->input('referral');
+
+            if ($referral_code === null) {
+                return response([
+                    'status' => 'error',
+                    'message' => 'Enter referral code.'
+                ]);
+            }
+
+            $referrer_id = $this->decodeReferral($referral_code);
+
+            // Check if the referral pair exists in the referrals table
+            $referralExists = Referral::where('referrer_id', $referrer_id)
+                ->where('referred_id', Auth::id()) // Assuming you are using Laravel's authentication
+                ->exists();
+
+            if ($referralExists) {
+                return response([
+                    'status' => 'error',
+                    'message' => 'Code already used.'
+                ]);
+            }
+
+            Session::put('referral', [
+                'id' => $referrer_id,
+                'package' => Product::findOrFail($product_id)->product_type_id,
+                'code' => $referral_code
+            ]);
+        } else {
+            Session::put('referral', [
+                'id' => Referral::where('referred_id', Auth::id())->first()->referrer_id,
+                'package' => Product::findOrFail($product_id)->product_type_id,
+                'code' => ''
             ]);
         }
-
-        $referrer_id = $this->decodeReferral($referral_code);
-
-        // Check if the referral pair exists in the referrals table
-        $referralExists = Referral::query()
-            ->where('referrer_id', $referrer_id)
-            ->where('referred_id', Auth::id()) // Assuming you are using Laravel's authentication
-            ->exists();
-
-        if ($referralExists) {
-            return response([
-                'status' => 'error',
-                'message' => 'Code already used.'
-            ]);
-        }
-
-        Session::put('referral', [
-            'id' => $referrer_id,
-            'package' => /*'basic_pack'*/ Product::findOrFail($product_id)->product_type_id, // product_type
-            'code' => $referral_code
-        ]);
 
         return response([
             'status' => 'success',

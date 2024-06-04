@@ -17,10 +17,12 @@
                         <div class="card-header">
                             <h4><a href="{{ route('admin.referral-code.view') }}" class="btn btn-primary"><i
                                         class="fas fa-code"></i> Referral Code</a></h4>
-                            <div class="card-header-action">
-                                <a href="{{ route('admin.referral.create') }}" class="btn btn-primary"><i
-                                        class="fas fa-plus"></i> Create New</a>
-                            </div>
+                            @if ( count($packages) > 0 )
+                                <div class="card-header-action">
+                                    <a href="{{ route('admin.referral.create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create New</a>
+                                </div>
+                            @endif
                         </div>
                         <div class="card-body">
                             {{ $dataTable->table() }}

@@ -7,11 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PointTransaction;
+use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\Referral;
 use App\Models\ReferralSetting;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use App\Traits\PointTrait;
 use App\Traits\ReferralTrait;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -20,13 +22,17 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use JsonException;
+use LaravelIdea\Helper\App\Models\_IH_ProductType_C;
 use Vinkla\Hashids\Facades\Hashids;
 
 class ReferralController extends Controller
 {
     use ReferralTrait;
+    use PointTrait;
 
     /**
      * Display a listing of the resource.
@@ -36,7 +42,9 @@ class ReferralController extends Controller
      */
     public function index(ReferralSettingDataTable $dataTable)
     {
-        return $dataTable->render('admin.commissions.direct-referral.index');
+        $packages = $this->untouchedPackages();
+
+        return $dataTable->render('admin.commissions.direct-referral.index', compact('packages'));
     }
 
     /**
@@ -48,7 +56,7 @@ class ReferralController extends Controller
      */
     public function create()
     {
-        $packages = ProductType::where('is_package', 1)->get();
+        $packages = $this->untouchedPackages();
 
         return view('admin.commissions.direct-referral.create', compact('packages'));
     }
@@ -213,11 +221,87 @@ class ReferralController extends Controller
     }
 
     /**
+     * Enter user into referral table with activation
+     * Add to sponsor wallet
+     * Add to sponsor points
+     *
+     * @param array $details
+     * @param string $type
+     * @param bool $activated
+     * @return void
+     * @throws JsonException
+     */
+    public static function referralEntry($details = [], $type = 'credit', $activated = true): void
+    {
+        $referral_session = Session::get('referral');
+
+        if ($referral_session && isset($referral_session['id'])) {
+            $referrer_id = $referral_session['id'];
+            $package = $referral_session['package'];
+
+            $product = Product::whereProductTypeId($package)->first();
+            $product_price = $product->price ?? 0;
+            $product_points = $product->points ?? 0;
+
+            $referralSettings = ReferralSetting::wherePackage($package)->first();
+            $referral_bonus = $referralSettings->bonus / 100;
+            $referral_points = $referralSettings->points / 100;
+
+            $bonus = $product_price * $referral_bonus;
+            $points = $product_points * $referral_points;
+
+            // encode into referral table and activate
+            Referral::create([
+                'referrer_id' => $referrer_id,
+                'referred_id' => auth()->user()->id,
+                'status' => $activated ? 1 : 0,
+            ]);
+
+            self::addToWallet($referrer_id, $bonus, $details, $type);
+            self::addToPoints($referrer_id, $points, $details, $type);
+        }
+    }
+
+    /**
+     * Add to user wallet
+     *
+     * @param $user_id
+     * @param $value
+     * @param array $details
+     * @param string $type
+     * @throws JsonException
+     */
+    protected static function addToWallet($user_id, $value, $details = [], $type = 'credit'): void
+    {
+        $user = User::findOrFail($user_id);
+
+        // add bonus and points to referrer
+        $wallet = $user->wallet;
+
+        if (!$wallet) {
+            // Create a wallet record for the user with a zero balance
+            $wallet = $user->wallet()->create(['balance' => 0]);
+        }
+
+        $wallet->balance += ($type === 'credit' ? $value : 0);
+        $wallet->save();
+
+        $data = [
+            'wallet_id' => $wallet->id,
+            'type' => $type,
+            'amount' => $value,
+            'details' => json_encode($details, JSON_THROW_ON_ERROR)
+        ];
+
+        WalletTransaction::create($data);
+    }
+
+    /**
      * Add Referral Bonus
      *
      * @param $orderId
      */
-    public static function addReferralBonus($orderId): void
+    public static function processPendingReferral($orderId): void
     {
         $order = Order::findOrFail($orderId);
         $orderProduct = OrderProduct::where('order_id', $order->id)->first();
@@ -316,5 +400,15 @@ class ReferralController extends Controller
             'type' => $type,
             'details' => $details
         ])->first();
+    }
+
+    /**
+     * @return ProductType[]|_IH_ProductType_C
+     */
+    protected function untouchedPackages()
+    {
+        return ProductType::where('is_package', 1)
+            ->whereNotIn('id',  ReferralSetting::select('package'))
+            ->get();
     }
 }

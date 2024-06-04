@@ -24,8 +24,14 @@
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="package">Package</label>
-                                            <input type="text" name="package" id="package" class="form-control"
-                                                   value="{{ old('package') ?? $unilevelSetting->package }}">
+                                            <select name="package" id="package" class="form-control">
+                                                <option value="">Select</option>
+                                                @foreach( $packages as $package )
+                                                    <option value="{{ $package->id }}" {{ (string) (old('package')
+                                                        ?? $unilevelSetting->package) === (string) $package->id
+                                                            ? 'selected' : '' }}>{{ $package->name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">

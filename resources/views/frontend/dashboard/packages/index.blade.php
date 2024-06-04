@@ -20,7 +20,7 @@
                     <div class="dashboard_content mt-2 mt-md-0">
                         <h3><i class="far fa-box" aria-hidden="true"></i> Packages</h3>
                         <div class="create_button view_cart_package {{ $cart_package
-                            && $cart_package[0]->options->is_package === '1' ? '' : 'd-none' }}">
+                            && count($cart_package) > 0 ? '' : 'd-none' }}">
                             <a href="{{ route('cart-details') }}" class="btn btn-primary">
                                 <i class="fas fa-shopping-cart" aria-hidden="true"></i> View Cart</a>
                         </div>

@@ -16,10 +16,12 @@
                     <div class="card">
                         <div class="card-header">
                             <h4>Unilevel Settings</h4>
-                            <div class="card-header-action">
-                                <a href="{{ route('admin.unilevel.create') }}" class="btn btn-primary"><i
-                                        class="fas fa-plus"></i> Create New</a>
-                            </div>
+                            @if ( count($packages) > 0 )
+                                <div class="card-header-action">
+                                    <a href="{{ route('admin.unilevel.create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create New</a>
+                                </div>
+                            @endif
                         </div>
                         <div class="card-body">
                             {{ $dataTable->table() }}

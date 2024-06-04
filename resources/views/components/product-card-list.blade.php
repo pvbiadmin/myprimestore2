@@ -79,7 +79,7 @@
 
             <ul class="wsus__single_pro_icon">
                 <li>
-                    @if ( $cart_package && $cart_package[0]->options->is_package === '1' ) @else
+                    @if ( !($cart_package && count($cart_package) > 0) )
                         <form class="cart-form">
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="hidden" name="quantity" value="1"/>

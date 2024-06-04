@@ -187,10 +187,10 @@ class OrderController extends Controller
         $order = Order::findOrFail($orderId);
 
         // referral wallet and points computation
-        ReferralController::addReferralBonus($orderId);
+        ReferralController::processPendingReferral($orderId);
 
         // compute unilevel
-        UnilevelController::addUnilevelBonus($orderId);
+        UnilevelController::processPendingUnilevel($orderId);
 
         $order->payment_status = $status;
         $order->save();

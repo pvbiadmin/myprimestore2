@@ -6,6 +6,7 @@ use App\DataTables\UnilevelSettingDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PointTransaction;
+use App\Models\ProductType;
 use App\Models\Referral;
 use App\Models\UnilevelSetting;
 use App\Models\User;
@@ -20,6 +21,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use JsonException;
+use LaravelIdea\Helper\App\Models\_IH_ProductType_C;
 
 class UnilevelController extends Controller
 {
@@ -31,7 +33,9 @@ class UnilevelController extends Controller
      */
     public function index(UnilevelSettingDataTable $dataTable)
     {
-        return $dataTable->render('admin.commissions.unilevel.index');
+        $packages = $this->untouchedPackages();
+
+        return $dataTable->render('admin.commissions.unilevel.index', compact('packages'));
     }
 
     /**
@@ -41,7 +45,9 @@ class UnilevelController extends Controller
      */
     public function create()
     {
-        return view('admin.commissions.unilevel.create');
+        $packages = $this->untouchedPackages();
+
+        return view('admin.commissions.unilevel.create', compact('packages'));
     }
 
     /**
@@ -72,8 +78,10 @@ class UnilevelController extends Controller
     public function edit(string $id)
     {
         $unilevelSetting = UnilevelSetting::findOrFail($id);
+        $packages = ProductType::where('is_package', 1)->get();
 
-        return view('admin.commissions.unilevel.edit', compact('unilevelSetting'));
+        return view('admin.commissions.unilevel.edit',
+            compact('unilevelSetting', 'packages'));
     }
 
     /**
@@ -164,7 +172,7 @@ class UnilevelController extends Controller
      * @param $orderId
      * @throws JsonException
      */
-    public static function addUnilevelBonus($orderId): void
+    public static function processPendingUnilevel($orderId): void
     {
         $order = Order::query()->findOrFail($orderId);
         $user = User::findOrFail($order->user_id);
@@ -248,5 +256,15 @@ class UnilevelController extends Controller
             'type' => $type,
             'details' => $details
         ])->first();
+    }
+
+    /**
+     * @return ProductType[]|_IH_ProductType_C
+     */
+    protected function untouchedPackages()
+    {
+        return ProductType::where('is_package', 1)
+            ->whereNotIn('id',  UnilevelSetting::select('package'))
+            ->get();
     }
 }
