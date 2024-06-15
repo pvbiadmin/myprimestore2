@@ -374,7 +374,7 @@ class CartController extends Controller
     {
         $product_id = $request->input('productId');
 
-        if (!hasReferral(Auth::user()->id)) {
+        if (!hasReferral(Auth::user()->id)) {// new user, code required
             $referral_code = $request->input('referral');
 
             if ($referral_code === null) {

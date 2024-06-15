@@ -303,8 +303,7 @@ class PaymentController extends Controller
             ];
         }
 
-// Default configuration if setting is not found
-        return [
+        return [ // Default configuration if setting is not found
             'mode' => 'sandbox', // or 'live' based on your default preference
             'sandbox' => [
                 'client_id' => '',
@@ -316,7 +315,6 @@ class PaymentController extends Controller
                 'client_secret' => '',
                 'app_id' => '',
             ],
-
             'payment_action' => 'Sale',
             'currency' => 'USD', // or any default currency
             'notify_url' => '',
