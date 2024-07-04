@@ -108,6 +108,7 @@
 
                     const $this = $(e.currentTarget);
                     const formData = $this.serialize();
+                    const productId = $this.find('input[name="product_id"]').val();
 
                     $.ajax({
                         url: "{{ route('add-to-cart') }}",
@@ -120,7 +121,7 @@
                                 getSidebarCartItems();
                                 $(".mini-cart-actions").removeClass("d-none");
                                 $(".view_cart_package").removeClass("d-none");
-                                $(".cart-form").addClass("d-none");
+                                $(`.product${productId}`).addClass("d-none");
                                 toastr.success(res.message);
                             } else if (res.status === "error") {
                                 toastr.error(res.message);
