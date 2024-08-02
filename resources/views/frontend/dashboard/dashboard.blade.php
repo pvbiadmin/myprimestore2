@@ -63,6 +63,22 @@
                                         <p style="font-size: x-large">***</p>
                                     </a>
                                 </div>
+                                <div class="col-xl-2 col-6 col-md-4">
+                                    <a class="wsus__dashboard_item sky" href="javascript:">
+                                        <i class="far fa-chart-network"></i>
+                                        <p style="font-size: small">Unilevel</p>
+                                        <p style="font-size: x-large">{{
+                                            $settings->currency_icon . number_format(@$unilevel, 2) }}</p>
+                                    </a>
+                                </div>
+                                <div class="col-xl-2 col-6 col-md-4">
+                                    <a class="wsus__dashboard_item blue" href="javascript:">
+                                        <i class="far fa-users"></i>
+                                        <p>Referral</p>
+                                        <p style="font-size: x-large">{{
+                                            $settings->currency_icon . number_format(@$referral, 2) }}</p>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -58,7 +58,8 @@ Route::controller(VendorProductController::class)->group(function () {
     Route::as('product.')->group(function () {
         Route::put('product/change-status', 'changeStatus')->name('change-status');
         Route::get('products/get-subcategories', 'getSubcategories')->name('get-subcategories');
-        Route::get('products/get-child-categories', 'getChildCategories')->name('get-child-categories');
+        Route::get('products/get-child-categories', 'getChildCategories')
+            ->name('get-child-categories');
     });
 });
 Route::resource('products', VendorProductController::class);
@@ -97,5 +98,6 @@ Route::controller(VendorOrderController::class)->group(function () {
 Route::get('reviews', [VendorProductReviewController::class, 'index'])->name('reviews.index');
 
 /** Withdraw route */
-Route::get('withdraw-request/{id}', [VendorWithdrawController::class, 'showRequest'])->name('withdraw-request.show');
+Route::get('withdraw-request/{id}', [VendorWithdrawController::class, 'showRequest'])
+    ->name('withdraw-request.show');
 Route::resource('withdraw', VendorWithdrawController::class);

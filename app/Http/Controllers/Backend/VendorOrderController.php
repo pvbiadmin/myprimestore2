@@ -17,7 +17,7 @@ class VendorOrderController extends Controller
     /**
      * View All Orders
      *
-     * @param \App\DataTables\VendorOrderDataTable $dataTable
+     * @param VendorOrderDataTable $dataTable
      * @return mixed
      */
     public function index(VendorOrderDataTable $dataTable): mixed
@@ -29,7 +29,7 @@ class VendorOrderController extends Controller
      * View Order Details
      *
      * @param string $id
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
+     * @return View|Application|Factory|\Illuminate\Contracts\Foundation\Application
      */
     public function show(string $id): View|Application|Factory|\Illuminate\Contracts\Foundation\Application
     {
@@ -41,8 +41,8 @@ class VendorOrderController extends Controller
     /**
      * Change Order Status
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param Request $request
+     * @return Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
      */
     public function changeOrderStatus(Request $request): Application|Response|\Illuminate\Contracts\Foundation\Application|ResponseFactory
     {

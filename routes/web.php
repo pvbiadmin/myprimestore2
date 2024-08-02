@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Backend\UserWithdrawController;
 use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\NewsletterController;
@@ -216,4 +217,9 @@ Route::group([
         Route::get('gcash/payment', 'payWithGCash')->name('gcash.payment');
         Route::get('paymaya/payment', 'payWithPaymaya')->name('paymaya.payment');
     });
+
+    /** Withdraw route */
+    Route::get('withdraw-request/{id}', [UserWithdrawController::class, 'showRequest'])
+        ->name('withdraw-request.show');
+    Route::resource('withdraw', UserWithdrawController::class);
 });

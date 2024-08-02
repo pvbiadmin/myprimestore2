@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commission;
 use App\Models\Order;
 use App\Models\ProductReview;
 use App\Models\Wishlist;
@@ -28,12 +29,24 @@ class UserDashboardController extends Controller
         $reviews = ProductReview::query()->where('user_id', Auth::user()->id)->count();
         $wishlist = Wishlist::query()->where('user_id', Auth::user()->id)->count();
 
+        $commission = Commission::where('user_id', Auth::user()->id)->first();
+        if ($commission) {
+            $unilevel = $commission->unilevel;
+            $referral = $commission->referral;
+        } else {
+            // Handle the case where no commission was found
+            $unilevel = 0;
+            $referral = 0;
+        }
+
         return view('frontend.dashboard.dashboard', compact(
             'total_orders',
             'pending_orders',
             'completed_orders',
             'reviews',
-            'wishlist'
+            'wishlist',
+            'unilevel',
+            'referral'
         ));
     }
 }

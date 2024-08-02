@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use DB;
 
-class VendorWithdrawController extends Controller
+class UserWithdrawController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -45,7 +45,7 @@ class VendorWithdrawController extends Controller
         $pendingAmount = WithdrawRequest::query()
             ->where('status', 'pending')->sum('total_amount');
 
-        return $dataTable->render('vendor.withdraw.index',
+        return $dataTable->render('frontend.dashboard.withdraw.index',
             compact('totalEarnings', 'currentBalance', 'totalWithdraw', 'pendingAmount'));
     }
 
@@ -56,7 +56,7 @@ class VendorWithdrawController extends Controller
     {
         $methods = WithdrawMethod::all();
 
-        return view('vendor.withdraw.create', compact('methods'));
+        return view('frontend.dashboard.withdraw.create', compact('methods'));
     }
 
     /**
@@ -131,7 +131,7 @@ class VendorWithdrawController extends Controller
 
         $withdraw->save();
 
-        return redirect()->route('vendor.withdraw.index')
+        return redirect()->route('frontend.dashboard.withdraw.index')
             ->with(['message' => 'Request added successfully']);
     }
 
@@ -149,6 +149,6 @@ class VendorWithdrawController extends Controller
     {
         $request = WithdrawRequest::query()->where('vendor_id', auth()->user()->id)->findOrFail($id);
 
-        return view('vendor.withdraw.show', compact('request'));
+        return view('frontend.dashboard.withdraw.show', compact('request'));
     }
 }
